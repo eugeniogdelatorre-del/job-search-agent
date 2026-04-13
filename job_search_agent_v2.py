@@ -303,14 +303,18 @@ def is_within_24h(date_str):
         if year <= 2025:
             return False
 
-    # Reject date patterns like "Jan 16", "Apr 09" without year (check if month is far from current)
-    month_match = re.search(r'\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+\d{1,2}\b', text)
+    # Reject date patterns like "Jan 16", "Apr 09" — calculate actual day difference
+    month_match = re.search(r'\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})\b', text)
     if month_match:
-        month_abbr = month_match.group(1)
-        current_month = datetime.now().strftime('%b').lower()
-        # If the month doesn't match current month, likely old
-        if month_abbr != current_month:
-            return False
+        try:
+            month_abbr = month_match.group(1).capitalize()
+            day = int(month_match.group(2))
+            current_year = datetime.now().year
+            dt = datetime.strptime(f"{month_abbr} {day} {current_year}", "%b %d %Y")
+            dt = dt.replace(tzinfo=timezone.utc)
+            return dt >= cutoff
+        except ValueError:
+            pass
 
     # Unknown format → include (don't want to miss jobs)
     return True
@@ -1620,47 +1624,152 @@ def scrape_talentweb3(session):
 
 
 # ============================================================================
-# SCRAPERS — SEARCH ENGINE + LINKEDIN DIRECT + X/TWITTER
+# SCRAPERS — LINKEDIN GUEST API + DUCKDUCKGO SEARCH
 # ============================================================================
 
-def _scrape_bing(session, query, source_label, domain_filter=""):
-    """Bing search scraper — much less aggressive rate limiting than Google."""
+def scrape_linkedin_guest_api(session):
+    """LinkedIn Guest Jobs API — public endpoint, no auth needed."""
     jobs = []
-    full_query = f"{query} {domain_filter}".strip()
-    # filters=ex1:"ez1" → last 24 hours on Bing
-    url = f"https://www.bing.com/search?q={quote_plus(full_query)}&filters=ex1%3a%22ez1%22&count=15"
-    time.sleep(2)
+    searches = [
+        ("community manager web3 crypto", "Remote"),
+        ("community manager blockchain", "Remote"),
+        ("growth lead crypto", "Remote"),
+        ("growth manager web3", "Remote"),
+        ("kol manager crypto", "Remote"),
+        ("marketing manager web3 crypto", "Remote"),
+        ("head of community crypto", "Remote"),
+        ("community lead blockchain", "Remote"),
+        ("ecosystem lead crypto", "Remote"),
+        ("ambassador program crypto", "Remote"),
+        ("influencer marketing crypto", "Remote"),
+        ("community manager crypto", "Latin America"),
+        ("growth lead web3", "Latin America"),
+    ]
+
+    for keywords, location in searches:
+        # LinkedIn Guest API — returns HTML fragments of job cards
+        url = (
+            f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
+            f"?keywords={quote_plus(keywords)}"
+            f"&location={quote_plus(location)}"
+            f"&f_TPR=r86400"  # Last 24 hours
+            f"&f_WT=2"        # Remote
+            f"&start=0"
+            f"&count=25"
+        )
+        time.sleep(1.5)
+        resp = safe_get(session, url)
+        if not resp:
+            continue
+
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        for card in soup.select("li, div.base-card, div.job-search-card, div[class*=base-card]"):
+            try:
+                title_el = card.select_one(
+                    "h3.base-search-card__title, "
+                    "h3[class*=title], "
+                    "h3, h4"
+                )
+                title = title_el.get_text(strip=True) if title_el else ""
+                if not title:
+                    continue
+
+                comp_el = card.select_one(
+                    "h4.base-search-card__subtitle, "
+                    "a.hidden-nested-link, "
+                    "h4[class*=subtitle], "
+                    "[class*=company]"
+                )
+                company = comp_el.get_text(strip=True) if comp_el else ""
+
+                link_el = card.select_one(
+                    "a.base-card__full-link, "
+                    "a[href*='linkedin.com/jobs'], "
+                    "a[href*='/jobs/view/']"
+                )
+                href = ""
+                if link_el:
+                    href = link_el.get("href", "")
+                    if "?" in href:
+                        href = href.split("?")[0]
+
+                if not href:
+                    # Try data attribute
+                    entity_urn = card.get("data-entity-urn", "")
+                    if entity_urn:
+                        job_id = entity_urn.split(":")[-1]
+                        href = f"https://www.linkedin.com/jobs/view/{job_id}"
+
+                loc_el = card.select_one(
+                    "span.job-search-card__location, "
+                    "[class*=location]"
+                )
+                location_text = loc_el.get_text(strip=True) if loc_el else "Remote"
+
+                time_el = card.select_one("time, [datetime]")
+                posted = ""
+                if time_el:
+                    posted = time_el.get("datetime", "") or time_el.get_text(strip=True)
+
+                if posted and not is_within_24h(posted):
+                    continue
+
+                if title and href:
+                    j = make_job(title, company, location_text, href,
+                                card.get_text(strip=True), "LinkedIn",
+                                posted_date=posted)
+                    if j:
+                        jobs.append(j)
+            except Exception:
+                continue
+
+    log.info(f"LinkedIn (Guest API): {len(jobs)} jobs (24h)")
+    return jobs
+
+
+def _scrape_duckduckgo(session, query, source_label):
+    """DuckDuckGo HTML search — zero rate limiting, very scraping-friendly."""
+    jobs = []
+    url = f"https://html.duckduckgo.com/html/?q={quote_plus(query)}"
+    time.sleep(1.5)
     resp = safe_get(session, url)
     if not resp:
         return jobs
 
     soup = BeautifulSoup(resp.text, "html.parser")
 
-    for result in soup.select("li.b_algo, div.b_algo"):
+    for result in soup.select("div.result, div.results_links"):
         try:
-            title_el = result.select_one("h2 a, h2")
+            title_el = result.select_one("a.result__a, h2 a, a.result__url")
             if not title_el:
                 continue
             title = title_el.get_text(strip=True)
-            href = title_el.get("href", "") if title_el.name == "a" else ""
-            if not href:
-                link_el = result.select_one("a[href^='http']")
-                href = link_el.get("href", "") if link_el else ""
+            href = title_el.get("href", "")
 
-            snippet_el = result.select_one("p, div.b_caption p, .b_paractl")
+            # DuckDuckGo wraps URLs — extract the real one
+            if "uddg=" in href:
+                from urllib.parse import parse_qs, urlparse as up
+                parsed = up(href)
+                real_url = parse_qs(parsed.query).get("uddg", [""])[0]
+                if real_url:
+                    href = real_url
+
+            snippet_el = result.select_one("a.result__snippet, .result__snippet")
             snippet = snippet_el.get_text(strip=True) if snippet_el else ""
 
             company = ""
             clean_title = title
-            if " - " in title:
-                parts = title.rsplit(" - ", 1)
-                clean_title = parts[0].strip()
-                company = parts[1].replace("| LinkedIn", "").replace("| Indeed", "").replace("| X", "").replace("| Twitter", "").strip()
-            if " | " in clean_title:
-                clean_title = clean_title.split(" | ", 1)[0].strip()
+            for sep in [" - ", " | ", " — ", " at "]:
+                if sep in title:
+                    parts = title.split(sep, 1)
+                    clean_title = parts[0].strip()
+                    company = parts[1].replace("LinkedIn", "").replace("X", "").replace("Twitter", "").strip()
+                    break
 
             if clean_title and href:
-                j = make_job(clean_title, company, "Remote", href, snippet, source_label, posted_date="today")
+                j = make_job(clean_title, company, "Remote", href, snippet,
+                            source_label, posted_date="today")
                 if j:
                     jobs.append(j)
         except Exception:
@@ -1669,94 +1778,47 @@ def _scrape_bing(session, query, source_label, domain_filter=""):
     return jobs
 
 
-def scrape_linkedin_direct(session):
-    """Scrape LinkedIn public job search directly."""
-    jobs = []
-    searches = [
-        "community+manager+web3+crypto",
-        "growth+lead+crypto+blockchain",
-        "kol+manager+crypto",
-        "marketing+manager+web3",
-        "head+of+community+crypto",
-    ]
-
-    for search in searches:
-        # f_TPR=r86400 = last 24 hours, f_WT=2 = remote
-        url = f"https://www.linkedin.com/jobs/search/?keywords={search}&f_TPR=r86400&f_WT=2&position=1&pageNum=0"
-        resp = safe_get(session, url)
-        if not resp:
-            continue
-
-        soup = BeautifulSoup(resp.text, "html.parser")
-
-        for card in soup.select("div.base-card, li.result-card, div.job-search-card, ul.jobs-search__results-list li"):
-            try:
-                title_el = card.select_one("h3, h4, .base-search-card__title, [class*=title]")
-                title = title_el.get_text(strip=True) if title_el else ""
-
-                comp_el = card.select_one("h4, .base-search-card__subtitle, [class*=company], [class*=subtitle]")
-                company = comp_el.get_text(strip=True) if comp_el else ""
-
-                link_el = card.select_one("a[href*='linkedin.com/jobs']") or card.select_one("a[href]")
-                href = link_el.get("href", "") if link_el else ""
-                if href and "?" in href:
-                    href = href.split("?")[0]
-
-                loc_el = card.select_one(".job-search-card__location, [class*=location]")
-                location = loc_el.get_text(strip=True) if loc_el else "Remote"
-
-                time_el = card.select_one("time, [datetime]")
-                posted = (time_el.get("datetime", "") or time_el.get_text(strip=True)) if time_el else ""
-
-                if not is_within_24h(posted):
-                    continue
-
-                if title and href:
-                    j = make_job(title, company, location, href, card.get_text(strip=True), "LinkedIn", posted_date=posted)
-                    if j:
-                        jobs.append(j)
-            except Exception:
-                continue
-
-    log.info(f"LinkedIn (direct): {len(jobs)} jobs (24h)")
-    return jobs
-
-
-def scrape_bing_linkedin(session):
-    """LinkedIn jobs via Bing search (last 24h)."""
-    jobs = []
-    for q in GOOGLE_SEARCH_QUERIES_WEB3:
-        results = _scrape_bing(session, q, "LinkedIn (via Bing)", "site:linkedin.com/jobs")
-        jobs.extend(results)
-    log.info(f"LinkedIn (Bing): {len(jobs)} jobs (24h)")
-    return jobs
-
-
-def scrape_bing_twitter(session):
-    """X/Twitter hiring posts via Bing search (last 24h)."""
-    jobs = []
-    twitter_queries = [
-        '(hiring OR "we\'re hiring") (community OR growth OR marketing OR kol) (web3 OR crypto)',
-        '("community lead" OR "growth lead" OR "community manager") crypto hiring',
-    ]
-    for q in twitter_queries:
-        results = _scrape_bing(session, q, "X/Twitter (via Bing)", "site:twitter.com OR site:x.com")
-        jobs.extend(results)
-    log.info(f"X/Twitter (Bing): {len(jobs)} jobs (24h)")
-    return jobs
-
-
-def scrape_bing_general(session):
-    """General job search via Bing (last 24h)."""
+def scrape_ddg_linkedin(session):
+    """LinkedIn jobs via DuckDuckGo search."""
     jobs = []
     queries = [
-        '"community manager" OR "kol manager" web3 crypto remote hiring',
-        '"growth lead" OR "head of community" crypto web3 remote',
+        'site:linkedin.com/jobs "community manager" OR "growth lead" web3 crypto remote',
+        'site:linkedin.com/jobs "kol manager" OR "marketing manager" crypto web3',
+        'site:linkedin.com/jobs "head of community" OR "ecosystem lead" crypto blockchain',
     ]
     for q in queries:
-        results = _scrape_bing(session, q, "Bing (general)")
+        results = _scrape_duckduckgo(session, q, "LinkedIn (via DDG)")
         jobs.extend(results)
-    log.info(f"Bing (general): {len(jobs)} jobs (24h)")
+    log.info(f"LinkedIn (DDG): {len(jobs)} jobs")
+    return jobs
+
+
+def scrape_ddg_twitter(session):
+    """X/Twitter hiring posts via DuckDuckGo search."""
+    jobs = []
+    queries = [
+        'site:x.com OR site:twitter.com hiring "community manager" OR "growth lead" crypto web3',
+        'site:x.com OR site:twitter.com "we\'re hiring" OR "join us" crypto web3 community growth marketing',
+    ]
+    for q in queries:
+        results = _scrape_duckduckgo(session, q, "X/Twitter (via DDG)")
+        jobs.extend(results)
+    log.info(f"X/Twitter (DDG): {len(jobs)} jobs")
+    return jobs
+
+
+def scrape_ddg_general(session):
+    """General Web3 job search via DuckDuckGo."""
+    jobs = []
+    queries = [
+        '"community manager" OR "kol manager" web3 crypto remote hiring 2026',
+        '"growth lead" OR "head of community" crypto web3 remote hiring',
+        '"community lead" OR "marketing manager" blockchain remote hiring',
+    ]
+    for q in queries:
+        results = _scrape_duckduckgo(session, q, "DuckDuckGo")
+        jobs.extend(results)
+    log.info(f"DuckDuckGo (general): {len(jobs)} jobs")
     return jobs
 
 
@@ -1793,11 +1855,11 @@ ALL_SCRAPERS = [
     # LATAM (1 active)
     ("GetOnBoard", scrape_getonboard),
     # Torre — removed (400 bad request, API changed)
-    # Search engine + LinkedIn + X (4 active)
-    ("LinkedIn (direct)", scrape_linkedin_direct),
-    ("LinkedIn (Bing)", scrape_bing_linkedin),
-    ("X/Twitter (Bing)", scrape_bing_twitter),
-    ("Bing (general)", scrape_bing_general),
+    # LinkedIn + X/Twitter + DuckDuckGo (4 active)
+    ("LinkedIn (Guest API)", scrape_linkedin_guest_api),
+    ("LinkedIn (via DDG)", scrape_ddg_linkedin),
+    ("X/Twitter (via DDG)", scrape_ddg_twitter),
+    ("DuckDuckGo", scrape_ddg_general),
 ]
 
 
