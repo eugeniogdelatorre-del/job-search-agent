@@ -143,9 +143,25 @@ EXCLUSIONS = [
     "Intern", "Internship", "Junior", "Entry Level", "Entry-Level",
     "Executive Assistant", "Personal Assistant", "Receptionist",
     "PhD Required", "Solidity Developer", "Smart Contract Engineer",
-    "Backend Engineer", "Frontend Engineer", "Full Stack",
-    "DevOps Engineer", "SRE", "Data Engineer",
+    "Backend Engineer", "Frontend Engineer", "Full Stack", "Full-Stack",
+    "DevOps Engineer", "SRE", "Data Engineer", "Data Scientist",
     "Machine Learning Engineer", "ML Engineer", "QA Engineer",
+    "Software Engineer", "Software Developer", "Platform Engineer",
+    "Site Reliability", "Security Engineer", "Infrastructure Engineer",
+    "iOS Developer", "Android Developer", "Mobile Developer",
+    "Cloud Engineer", "Systems Engineer", "Network Engineer",
+    # Spanish dev/non-relevant roles
+    "Desarrollador", "Ingeniero de Software", "Programador",
+    "Analista de Datos", "Administrador de Base", "Soporte Técnico",
+    "Soporte en Terreno", "Reclutador", "Recruiter IT",
+    "Instructor", "Tutor", "Copywriter", "Video Editor",
+    "Contador", "Abogado", "Diseñador UX", "Diseñador UI",
+]
+
+# Hybrid/onsite keywords to reject in title or location
+HYBRID_KEYWORDS = [
+    "hybrid", "híbrido", "hibrido", "on-site", "onsite", "in-office",
+    "presencial", "en oficina",
 ]
 
 # Search query sets used across multiple Google-based scrapers
@@ -465,28 +481,37 @@ def score_job(title, company, description, location, salary_text=""):
         "africa", "nigeria", "kenya", "cape town", "lagos", "nairobi",
         "india only", "china only", "japan only",
         "on-site only", "onsite only", "in-office only",
-        # Major cities (only excluded when "remote" is NOT also mentioned)
+        # Major cities (excluded when "remote" is NOT also mentioned)
         "san francisco", "new york", "los angeles", "chicago", "seattle",
         "london", "berlin", "paris", "tokyo", "singapore", "hong kong",
         "sydney", "toronto", "dubai", "mumbai", "bangalore",
+        "santiago", "são paulo", "sao paulo",
     ]
     loc_lower = location.lower()
     for loc_exc in LOCATION_EXCLUSIONS:
-        if loc_exc in loc_lower and "remote" not in loc_lower and "hybrid" not in loc_lower:
+        if loc_exc in loc_lower and "remote" not in loc_lower:
             return -1, [f"Location excluded: '{loc_exc}'"]
     # Also check title for region-specific roles
     for loc_exc in ["- africa", "- india", "- nigeria", "- kenya", "- china", "- japan", "- apac", "- emea"]:
         if loc_exc in title_lower:
             return -1, [f"Region-specific role: '{loc_exc}'"]
 
-    # Also scan description for non-remote city mentions when location says "Remote"
-    if loc_lower in ("remote", ""):
-        desc_lower = description.lower()
-        onsite_signals = ["must be based in", "office in", "on-site", "onsite", "in-person", "relocate to"]
-        for signal in onsite_signals:
-            if signal in desc_lower:
-                score_penalty = True
-                break
+    # Hybrid/onsite rejection — allow hybrid ONLY if in Buenos Aires/Argentina
+    combined = f"{title_lower} {loc_lower} {description.lower()}"
+    for hw in HYBRID_KEYWORDS:
+        if hw in combined:
+            is_buenos_aires = any(ba in combined for ba in ["buenos aires", "argentina", "caba"])
+            if is_buenos_aires:
+                # Hybrid in Buenos Aires — keep it, small bonus
+                score += 5
+                reasons.append("+5 Hybrid in Buenos Aires")
+            elif "remote" in combined:
+                # Hybrid + remote mentioned — keep but no bonus
+                pass
+            else:
+                # Hybrid elsewhere — reject
+                return -1, [f"Hybrid/onsite not in Buenos Aires: '{hw}'"]
+            break
 
     # Salary floor — check explicit salary field
     if salary_text:
@@ -1595,44 +1620,44 @@ def scrape_talentweb3(session):
 
 
 # ============================================================================
-# SCRAPERS — GOOGLE DORKING (LinkedIn, X/Twitter, Indeed)
+# SCRAPERS — SEARCH ENGINE + LINKEDIN DIRECT + X/TWITTER
 # ============================================================================
 
-def _scrape_google(session, query, source_label, domain_filter=""):
-    """Generic Google search scraper with 24h time filter."""
+def _scrape_bing(session, query, source_label, domain_filter=""):
+    """Bing search scraper — much less aggressive rate limiting than Google."""
     jobs = []
-    # tbs=qdr:d → last 24 hours
     full_query = f"{query} {domain_filter}".strip()
-    url = f"https://www.google.com/search?q={quote_plus(full_query)}&tbs=qdr:d&num=10"
-    # Longer delay for Google to avoid 429 rate limits
-    time.sleep(3)
+    # filters=ex1:"ez1" → last 24 hours on Bing
+    url = f"https://www.bing.com/search?q={quote_plus(full_query)}&filters=ex1%3a%22ez1%22&count=15"
+    time.sleep(2)
     resp = safe_get(session, url)
     if not resp:
         return jobs
 
     soup = BeautifulSoup(resp.text, "html.parser")
 
-    for result in soup.select("div.g, div[data-sokoban-container], div.tF2Cxc"):
+    for result in soup.select("li.b_algo, div.b_algo"):
         try:
-            title_el = result.select_one("h3")
-            title = title_el.get_text(strip=True) if title_el else ""
+            title_el = result.select_one("h2 a, h2")
+            if not title_el:
+                continue
+            title = title_el.get_text(strip=True)
+            href = title_el.get("href", "") if title_el.name == "a" else ""
+            if not href:
+                link_el = result.select_one("a[href^='http']")
+                href = link_el.get("href", "") if link_el else ""
 
-            link_el = result.select_one("a[href^='http']")
-            href = link_el.get("href", "") if link_el else ""
-
-            snippet_el = result.select_one("div.VwiC3b, span.aCOpRe, div[data-sncf]")
+            snippet_el = result.select_one("p, div.b_caption p, .b_paractl")
             snippet = snippet_el.get_text(strip=True) if snippet_el else ""
 
-            # Parse company from title
             company = ""
             clean_title = title
             if " - " in title:
                 parts = title.rsplit(" - ", 1)
                 clean_title = parts[0].strip()
-                company = parts[1].replace("| LinkedIn", "").replace("| Indeed", "").replace("(@", "").strip()
+                company = parts[1].replace("| LinkedIn", "").replace("| Indeed", "").replace("| X", "").replace("| Twitter", "").strip()
             if " | " in clean_title:
-                parts = clean_title.split(" | ", 1)
-                clean_title = parts[0].strip()
+                clean_title = clean_title.split(" | ", 1)[0].strip()
 
             if clean_title and href:
                 j = make_job(clean_title, company, "Remote", href, snippet, source_label, posted_date="today")
@@ -1644,51 +1669,94 @@ def _scrape_google(session, query, source_label, domain_filter=""):
     return jobs
 
 
-def scrape_google_linkedin(session):
-    """LinkedIn jobs via Google (last 24h)."""
+def scrape_linkedin_direct(session):
+    """Scrape LinkedIn public job search directly."""
     jobs = []
-    for q in GOOGLE_SEARCH_QUERIES_WEB3:
-        results = _scrape_google(session, q, "LinkedIn (via Google)", "site:linkedin.com/jobs")
-        jobs.extend(results)
-    log.info(f"LinkedIn (Google): {len(jobs)} jobs (24h)")
+    searches = [
+        "community+manager+web3+crypto",
+        "growth+lead+crypto+blockchain",
+        "kol+manager+crypto",
+        "marketing+manager+web3",
+        "head+of+community+crypto",
+    ]
+
+    for search in searches:
+        # f_TPR=r86400 = last 24 hours, f_WT=2 = remote
+        url = f"https://www.linkedin.com/jobs/search/?keywords={search}&f_TPR=r86400&f_WT=2&position=1&pageNum=0"
+        resp = safe_get(session, url)
+        if not resp:
+            continue
+
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        for card in soup.select("div.base-card, li.result-card, div.job-search-card, ul.jobs-search__results-list li"):
+            try:
+                title_el = card.select_one("h3, h4, .base-search-card__title, [class*=title]")
+                title = title_el.get_text(strip=True) if title_el else ""
+
+                comp_el = card.select_one("h4, .base-search-card__subtitle, [class*=company], [class*=subtitle]")
+                company = comp_el.get_text(strip=True) if comp_el else ""
+
+                link_el = card.select_one("a[href*='linkedin.com/jobs']") or card.select_one("a[href]")
+                href = link_el.get("href", "") if link_el else ""
+                if href and "?" in href:
+                    href = href.split("?")[0]
+
+                loc_el = card.select_one(".job-search-card__location, [class*=location]")
+                location = loc_el.get_text(strip=True) if loc_el else "Remote"
+
+                time_el = card.select_one("time, [datetime]")
+                posted = (time_el.get("datetime", "") or time_el.get_text(strip=True)) if time_el else ""
+
+                if not is_within_24h(posted):
+                    continue
+
+                if title and href:
+                    j = make_job(title, company, location, href, card.get_text(strip=True), "LinkedIn", posted_date=posted)
+                    if j:
+                        jobs.append(j)
+            except Exception:
+                continue
+
+    log.info(f"LinkedIn (direct): {len(jobs)} jobs (24h)")
     return jobs
 
 
-def scrape_google_twitter(session):
-    """X/Twitter hiring posts via Google (last 24h)."""
+def scrape_bing_linkedin(session):
+    """LinkedIn jobs via Bing search (last 24h)."""
+    jobs = []
+    for q in GOOGLE_SEARCH_QUERIES_WEB3:
+        results = _scrape_bing(session, q, "LinkedIn (via Bing)", "site:linkedin.com/jobs")
+        jobs.extend(results)
+    log.info(f"LinkedIn (Bing): {len(jobs)} jobs (24h)")
+    return jobs
+
+
+def scrape_bing_twitter(session):
+    """X/Twitter hiring posts via Bing search (last 24h)."""
     jobs = []
     twitter_queries = [
         '(hiring OR "we\'re hiring") (community OR growth OR marketing OR kol) (web3 OR crypto)',
         '("community lead" OR "growth lead" OR "community manager") crypto hiring',
     ]
     for q in twitter_queries:
-        results = _scrape_google(session, q, "X/Twitter (via Google)", "site:twitter.com OR site:x.com")
+        results = _scrape_bing(session, q, "X/Twitter (via Bing)", "site:twitter.com OR site:x.com")
         jobs.extend(results)
-    log.info(f"X/Twitter (Google): {len(jobs)} jobs (24h)")
+    log.info(f"X/Twitter (Bing): {len(jobs)} jobs (24h)")
     return jobs
 
 
-def scrape_google_indeed(session):
-    """Indeed + Glassdoor via Google (last 24h)."""
-    jobs = []
-    for q in GOOGLE_SEARCH_QUERIES_GENERAL[:1]:
-        results = _scrape_google(session, q, "Indeed (via Google)", "site:indeed.com OR site:glassdoor.com")
-        jobs.extend(results)
-    log.info(f"Indeed/Glassdoor (Google): {len(jobs)} jobs (24h)")
-    return jobs
-
-
-def scrape_google_misc(session):
-    """Catch-all Google search for Web3 jobs posted in last 24h on any site."""
+def scrape_bing_general(session):
+    """General job search via Bing (last 24h)."""
     jobs = []
     queries = [
         '"community manager" OR "kol manager" web3 crypto remote hiring',
-        '"growth lead" OR "head of community" crypto web3 remote hiring',
+        '"growth lead" OR "head of community" crypto web3 remote',
     ]
     for q in queries:
-        results = _scrape_google(session, q, "Google (misc)")
+        results = _scrape_bing(session, q, "Bing (general)")
         jobs.extend(results)
-    log.info(f"Google (misc): {len(jobs)} jobs (24h)")
+    log.info(f"Bing (general): {len(jobs)} jobs (24h)")
     return jobs
 
 
@@ -1725,11 +1793,11 @@ ALL_SCRAPERS = [
     # LATAM (1 active)
     ("GetOnBoard", scrape_getonboard),
     # Torre — removed (400 bad request, API changed)
-    # Google-based (4 active — reduced queries to avoid rate limits)
-    ("LinkedIn (Google)", scrape_google_linkedin),
-    ("X/Twitter (Google)", scrape_google_twitter),
-    ("Indeed/Glassdoor (Google)", scrape_google_indeed),
-    ("Google (misc)", scrape_google_misc),
+    # Search engine + LinkedIn + X (4 active)
+    ("LinkedIn (direct)", scrape_linkedin_direct),
+    ("LinkedIn (Bing)", scrape_bing_linkedin),
+    ("X/Twitter (Bing)", scrape_bing_twitter),
+    ("Bing (general)", scrape_bing_general),
 ]
 
 
