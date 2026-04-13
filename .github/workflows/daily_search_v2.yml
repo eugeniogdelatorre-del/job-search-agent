@@ -33,8 +33,8 @@ jobs:
 
       - name: Commit updated digest to repo
         run: |
-          git config user.name "Job Search Bot"
-          git config user.email "bot@jobsearch.local"
+          git config user.name "Eugenio Garcia de la Torre"
+          git config user.email "eugeniogdelatorre@gmail.com"
           git add public/index.html || true
           git diff --cached --quiet || git commit -m "Daily digest $(date +%Y-%m-%d)"
           git push || true
