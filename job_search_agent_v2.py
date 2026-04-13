@@ -1801,344 +1801,302 @@ def build_email_html(jobs):
     for j in jobs:
         sources[j["source"]] = sources.get(j["source"], 0) + 1
 
+    # Build source filter buttons
+    source_buttons = ''.join(
+        f'<button class="filter-btn" data-source="{k}" onclick="toggleSource(this)">{k} <span class="cnt">{v}</span></button>'
+        for k, v in sorted(sources.items(), key=lambda x: -x[1])
+    )
+
+    # Build job cards
     jobs_html = ""
     for i, job in enumerate(jobs, 1):
         score = job.get("score", 0)
+        if score >= 70: sc, sl, ring = "#10b981", "Excellent", 70
+        elif score >= 50: sc, sl, ring = "#f59e0b", "Good", 50
+        else: sc, sl, ring = "#6b7280", "Fair", 30
 
-        # Score color
-        if score >= 70:
-            sc, sl = "#10b981", "Excellent"
-        elif score >= 50:
-            sc, sl = "#f59e0b", "Good"
-        else:
-            sc, sl = "#6b7280", "Moderate"
+        # SVG ring
+        circum = 2 * 3.14159 * 18
+        filled = circum * score / 100
+        gap = circum - filled
 
-        # Badges
         badges = ""
+        blob = f"{job['title']} {job['description']} {job['location']} {job['company']}".lower()
         if job.get("salary"):
-            badges += f'<span class="badge badge-salary">{job["salary"]}</span>'
-        blob = f"{job['title']} {job['description']} {job['location']}".lower()
+            badges += f'<span class="badge b-salary">{job["salary"]}</span>'
         if any(kw.lower() in blob for kw in BILINGUAL_KEYWORDS):
-            badges += '<span class="badge badge-latam">LATAM/ES</span>'
-        if any(kw.lower() in blob for kw in WEB3_KEYWORDS[:10]):
-            badges += '<span class="badge badge-web3">Web3</span>'
+            badges += '<span class="badge b-latam">LATAM</span>'
+        if any(kw.lower() in blob for kw in WEB3_KEYWORDS[:12]):
+            badges += '<span class="badge b-web3">Web3</span>'
 
-        desc = job["description"][:220].replace("<", "&lt;").replace(">", "&gt;")
-        loc = job["location"].replace("<", "&lt;")
-        company = job["company"].replace("<", "&lt;")
+        desc = job["description"][:200].replace("<", "&lt;").replace(">", "&gt;")
         title = job["title"].replace("<", "&lt;")
+        company = job["company"].replace("<", "&lt;")
+        loc = job["location"].replace("<", "&lt;")
         link = job["url"]
+        src = job["source"].replace("<", "&lt;")
 
         jobs_html += f"""
-      <div class="job-card">
-        <div class="job-header">
-          <div class="job-info">
-            <h3 class="job-title"><a href="{link}" target="_blank" rel="noopener">{title}</a></h3>
-            <div class="job-meta">
-              <span class="meta-item"><span class="meta-icon">◆</span> {company}</span>
-              <span class="meta-item"><span class="meta-icon">◇</span> {loc}</span>
-              <span class="meta-item source">{job['source']}</span>
+      <article class="card" data-score="{score}" data-source="{src}">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="{link}" target="_blank" rel="noopener">{title}</a></h3>
+            <div class="meta">
+              <span>{company}</span>
+              <span class="dot"></span>
+              <span>{loc}</span>
+              <span class="dot"></span>
+              <span class="src">{src}</span>
             </div>
+            <p class="desc">{desc}</p>
+            <div class="badges">{badges}</div>
           </div>
-          <div class="score" style="--sc: {sc}">
-            <span class="score-num">{score}</span>
-            <span class="score-label">{sl}</span>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="{sc}" stroke-width="3"
+                stroke-dasharray="{filled:.1f} {gap:.1f}" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="{sc}" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">{score}</text>
+            </svg>
           </div>
         </div>
-        <p class="job-desc">{desc}</p>
-        <div class="job-footer">
-          <div class="badges">{badges}</div>
-          <a href="{link}" target="_blank" rel="noopener" class="apply-btn">View Role →</a>
+        <div class="card-action">
+          <a href="{link}" target="_blank" rel="noopener" class="btn">View Role</a>
         </div>
-      </div>"""
+      </article>"""
 
     if not jobs:
         jobs_html = """
-      <div class="empty-state">
-        <div class="empty-icon">○</div>
-        <h3>No new matches today</h3>
-        <p>The market varies day to day. New roles will appear tomorrow.</p>
+      <div class="empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <h3>No matches today</h3>
+        <p>The market varies daily. Check back tomorrow.</p>
       </div>"""
-
-    source_tags = "".join(
-        f'<span class="source-tag">{k} <strong>{v}</strong></span>'
-        for k, v in sorted(sources.items(), key=lambda x: -x[1])
-    )
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Job Digest — {today}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {{
-    --bg: #0a0a0b;
-    --surface: #141416;
-    --surface2: #1c1c1f;
-    --border: #2a2a2e;
-    --text: #e4e4e7;
-    --text2: #a1a1aa;
-    --text3: #71717a;
-    --accent: #6366f1;
-    --green: #10b981;
-    --amber: #f59e0b;
-    --blue: #3b82f6;
-    --radius: 12px;
-  }}
-  * {{ margin:0; padding:0; box-sizing:border-box; }}
-  body {{
-    font-family: 'DM Sans', -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    min-height: 100vh;
-  }}
-  .container {{ max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }}
+*{{margin:0;padding:0;box-sizing:border-box}}
+:root{{
+  --bg:#0B0F19;--s1:#111827;--s2:#1F2937;--s3:#374151;
+  --b:rgba(255,255,255,0.06);--b2:rgba(255,255,255,0.1);
+  --t1:#F9FAFB;--t2:#9CA3AF;--t3:#6B7280;
+  --acc:#6366F1;--green:#10B981;--amber:#F59E0B;--red:#EF4444;
+  --r:14px;
+}}
+body{{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t1);line-height:1.6;min-height:100vh}}
+h1,h2,h3{{font-family:'Manrope',system-ui,sans-serif}}
 
-  /* Header */
-  .header {{
-    text-align: center;
-    padding: 48px 0 40px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 32px;
-  }}
-  .header-eyebrow {{
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 12px;
-  }}
-  .header h1 {{
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.5px;
-  }}
-  .header-date {{
-    color: var(--text3);
-    font-size: 14px;
-    margin-top: 8px;
-  }}
-  .stats-row {{
-    display: flex;
-    justify-content: center;
-    gap: 32px;
-    margin-top: 24px;
-  }}
-  .stat {{
-    text-align: center;
-  }}
-  .stat-num {{
-    font-size: 28px;
-    font-weight: 700;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--text);
-  }}
-  .stat-label {{
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text3);
-    margin-top: 2px;
-  }}
+.wrap{{max-width:780px;margin:0 auto;padding:32px 20px 80px}}
 
-  /* Source tags */
-  .sources {{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    justify-content: center;
-    margin-bottom: 32px;
-  }}
-  .source-tag {{
-    font-size: 11px;
-    padding: 4px 10px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    color: var(--text3);
-    font-family: 'JetBrains Mono', monospace;
-  }}
-  .source-tag strong {{ color: var(--text2); }}
+/* ── Header ── */
+.hdr{{text-align:center;padding:48px 0 36px;border-bottom:1px solid var(--b);margin-bottom:28px}}
+.hdr-eye{{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--acc);margin-bottom:10px}}
+.hdr h1{{font-size:32px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--t1),var(--t2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}}
+.hdr-date{{color:var(--t3);font-size:13px;margin-top:6px}}
+.stats{{display:flex;justify-content:center;gap:40px;margin-top:28px}}
+.stat-n{{font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--t1)}}
+.stat-l{{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);margin-top:2px}}
 
-  /* Job cards */
-  .job-card {{
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 12px;
-    transition: border-color 0.2s;
-  }}
-  .job-card:hover {{
-    border-color: #3a3a40;
-  }}
-  .job-header {{
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-  }}
-  .job-info {{ flex: 1; }}
-  .job-title {{
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 1.4;
-    margin-bottom: 6px;
-  }}
-  .job-title a {{
-    color: var(--text);
-    text-decoration: none;
-  }}
-  .job-title a:hover {{
-    color: var(--accent);
-  }}
-  .job-meta {{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    font-size: 13px;
-    color: var(--text3);
-  }}
-  .meta-item {{ display: flex; align-items: center; gap: 4px; }}
-  .meta-icon {{ font-size: 8px; color: var(--text3); opacity: 0.5; }}
-  .source {{ color: var(--accent); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }}
-  .score {{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 52px;
-    padding: 8px 12px;
-    background: var(--surface2);
-    border-radius: 10px;
-    border: 1px solid var(--border);
-  }}
-  .score-num {{
-    font-size: 20px;
-    font-weight: 700;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--sc);
-  }}
-  .score-label {{
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text3);
-    margin-top: 1px;
-  }}
-  .job-desc {{
-    font-size: 13px;
-    color: var(--text3);
-    margin: 12px 0;
-    line-height: 1.5;
-  }}
-  .job-footer {{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 12px;
-  }}
-  .badges {{ display: flex; flex-wrap: wrap; gap: 6px; }}
-  .badge {{
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-weight: 500;
-    font-family: 'JetBrains Mono', monospace;
-  }}
-  .badge-salary {{ background: #1e3a2f; color: #34d399; border: 1px solid #065f46; }}
-  .badge-latam {{ background: #2d2006; color: #fbbf24; border: 1px solid #78350f; }}
-  .badge-web3 {{ background: #1e1b4b; color: #818cf8; border: 1px solid #3730a3; }}
-  .apply-btn {{
-    font-size: 13px;
-    padding: 8px 20px;
-    background: var(--accent);
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: opacity 0.2s;
-    white-space: nowrap;
-  }}
-  .apply-btn:hover {{ opacity: 0.85; }}
+/* ── Filters ── */
+.filters{{
+  display:flex;flex-wrap:wrap;gap:8px;padding:16px 0 20px;
+  border-bottom:1px solid var(--b);margin-bottom:24px;
+  align-items:center;
+}}
+.filters-label{{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-right:4px;font-family:'JetBrains Mono',monospace}}
+.filter-btn{{
+  font-size:12px;padding:6px 14px;border-radius:999px;
+  border:1px solid var(--b2);background:transparent;color:var(--t2);
+  cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;
+}}
+.filter-btn:hover{{border-color:var(--acc);color:var(--t1)}}
+.filter-btn.active{{background:var(--acc);border-color:var(--acc);color:#fff}}
+.filter-btn .cnt{{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  background:rgba(255,255,255,0.1);padding:1px 6px;border-radius:99px;margin-left:4px;
+}}
+.filter-btn.active .cnt{{background:rgba(255,255,255,0.2)}}
+.score-filter{{display:flex;align-items:center;gap:8px;margin-left:auto}}
+.score-filter label{{font-size:11px;color:var(--t3);font-family:'JetBrains Mono',monospace}}
+.score-filter input[type=range]{{
+  width:100px;height:4px;-webkit-appearance:none;appearance:none;
+  background:var(--s3);border-radius:2px;outline:none;
+}}
+.score-filter input[type=range]::-webkit-slider-thumb{{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--acc);cursor:pointer;border:2px solid var(--bg);
+}}
+.score-val{{font-size:12px;color:var(--acc);font-family:'JetBrains Mono',monospace;min-width:24px}}
 
-  /* Empty state */
-  .empty-state {{
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text3);
-  }}
-  .empty-icon {{ font-size: 48px; margin-bottom: 16px; opacity: 0.3; }}
-  .empty-state h3 {{ color: var(--text2); margin-bottom: 8px; }}
+/* ── Cards ── */
+.card{{
+  background:var(--s1);border:1px solid var(--b);border-radius:var(--r);
+  padding:24px;margin-bottom:12px;position:relative;
+  transition:border-color .25s,transform .25s,opacity .25s;
+}}
+.card::before{{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:var(--r) var(--r) 0 0;
+  background:linear-gradient(90deg,var(--acc),#8B5CF6);
+  opacity:0;transition:opacity .25s;
+}}
+.card:hover{{border-color:var(--b2);transform:translateY(-2px)}}
+.card:hover::before{{opacity:1}}
+.card.hidden{{opacity:0;transform:scale(0.96);pointer-events:none;position:absolute;visibility:hidden}}
 
-  /* Footer */
-  .footer {{
-    text-align: center;
-    padding: 32px 0;
-    border-top: 1px solid var(--border);
-    margin-top: 40px;
-    color: var(--text3);
-    font-size: 12px;
-  }}
-  .footer p {{ margin: 4px 0; }}
-  .footer strong {{ color: var(--text2); }}
+.card-main{{display:flex;gap:16px;align-items:flex-start}}
+.card-left{{flex:1;min-width:0}}
+.card-left h3{{font-size:17px;font-weight:700;line-height:1.35;margin-bottom:6px}}
+.card-left h3 a{{color:var(--t1);text-decoration:none;transition:color .2s}}
+.card-left h3 a:hover{{color:var(--acc)}}
 
-  @media (max-width: 600px) {{
-    .container {{ padding: 20px 16px 60px; }}
-    .header h1 {{ font-size: 22px; }}
-    .stats-row {{ gap: 20px; }}
-    .job-header {{ flex-direction: column; }}
-    .score {{ flex-direction: row; gap: 8px; align-self: flex-start; }}
-    .job-footer {{ flex-direction: column; gap: 12px; align-items: flex-start; }}
-    .apply-btn {{ width: 100%; text-align: center; }}
-  }}
+.meta{{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--t3);margin-bottom:10px}}
+.dot{{width:3px;height:3px;border-radius:50%;background:var(--s3);flex-shrink:0}}
+.src{{color:var(--acc);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}}
+
+.desc{{font-size:13px;color:var(--t3);line-height:1.55;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
+
+.badges{{display:flex;flex-wrap:wrap;gap:6px}}
+.badge{{font-size:10px;padding:3px 10px;border-radius:6px;font-weight:600;font-family:'JetBrains Mono',monospace;letter-spacing:0.3px}}
+.b-salary{{background:#064E3B;color:#6EE7B7;border:1px solid #065F46}}
+.b-latam{{background:#78350F;color:#FCD34D;border:1px solid #92400E}}
+.b-web3{{background:#312E81;color:#A5B4FC;border:1px solid #3730A3}}
+
+.card-right{{flex-shrink:0}}
+.ring{{width:48px;height:48px}}
+
+.card-action{{margin-top:14px;display:flex;justify-content:flex-end}}
+.btn{{
+  font-size:13px;padding:8px 22px;border-radius:8px;
+  background:rgba(99,102,241,0.12);color:var(--acc);
+  text-decoration:none;font-weight:600;
+  border:1px solid rgba(99,102,241,0.2);
+  transition:all .2s;
+}}
+.btn:hover{{background:var(--acc);color:#fff;border-color:var(--acc)}}
+
+/* ── Empty ── */
+.empty{{text-align:center;padding:64px 20px;color:var(--t3)}}
+.empty svg{{margin-bottom:16px;opacity:0.4}}
+.empty h3{{color:var(--t2);font-size:18px;margin-bottom:6px}}
+
+/* ── Footer ── */
+.ftr{{text-align:center;padding:32px 0;border-top:1px solid var(--b);margin-top:36px;font-size:12px;color:var(--t3)}}
+.ftr p{{margin:3px 0}}
+.ftr strong{{color:var(--t2)}}
+
+/* ── Scroll reveal ── */
+@keyframes fadeUp{{from{{opacity:0;transform:translateY(16px)}}to{{opacity:1;transform:translateY(0)}}}}
+.card{{animation:fadeUp .4s ease both}}
+.card:nth-child(2){{animation-delay:.05s}}
+.card:nth-child(3){{animation-delay:.1s}}
+.card:nth-child(4){{animation-delay:.15s}}
+.card:nth-child(5){{animation-delay:.2s}}
+
+/* ── Mobile ── */
+@media(max-width:600px){{
+  .wrap{{padding:20px 16px 60px}}
+  .hdr h1{{font-size:24px}}
+  .stats{{gap:24px}}
+  .stat-n{{font-size:24px}}
+  .card-main{{flex-direction:column}}
+  .card-right{{align-self:flex-start}}
+  .ring{{width:40px;height:40px}}
+  .score-filter{{margin-left:0;width:100%}}
+  .card-action{{justify-content:stretch}}
+  .btn{{width:100%;text-align:center}}
+}}
 </style>
 </head>
 <body>
-<div class="container">
+<div class="wrap">
 
-  <div class="header">
-    <div class="header-eyebrow">Job Search Agent</div>
+  <header class="hdr">
+    <div class="hdr-eye">Job Search Agent</div>
     <h1>Daily Digest</h1>
-    <p class="header-date">{today} · Updated {time_str} · Last 24 hours</p>
-    <div class="stats-row">
-      <div class="stat">
-        <div class="stat-num">{len(jobs)}</div>
-        <div class="stat-label">Matches</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num">{len(sources)}</div>
-        <div class="stat-label">Sources</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num">{max((j.get('score',0) for j in jobs), default=0)}</div>
-        <div class="stat-label">Top Score</div>
-      </div>
+    <p class="hdr-date">{today} · {time_str} · Last 24 hours</p>
+    <div class="stats">
+      <div><div class="stat-n">{len(jobs)}</div><div class="stat-l">Matches</div></div>
+      <div><div class="stat-n">{len(sources)}</div><div class="stat-l">Sources</div></div>
+      <div><div class="stat-n">{max((j.get('score',0) for j in jobs), default=0)}</div><div class="stat-l">Top Score</div></div>
+    </div>
+  </header>
+
+  <div class="filters">
+    <span class="filters-label">Filter</span>
+    {source_buttons}
+    <div class="score-filter">
+      <label>Min score</label>
+      <input type="range" min="0" max="100" value="0" id="scoreSlider" oninput="filterCards()">
+      <span class="score-val" id="scoreVal">0</span>
     </div>
   </div>
 
-  <div class="sources">
-    {source_tags}
-  </div>
+  <section id="jobList">
+    {jobs_html}
+  </section>
 
-  {jobs_html}
+  <p id="noResults" style="display:none;text-align:center;color:var(--t3);padding:40px;font-size:14px;">
+    No jobs match the current filters. Try adjusting above.
+  </p>
 
-  <div class="footer">
+  <footer class="ftr">
     <p><strong>Eugenio García de la Torre</strong> · Job Search Agent v2</p>
-    <p>20 sources · Remote only · $40K+ · 24h recency · Argentina-eligible</p>
+    <p>20 sources · Remote only · $40K+ · Argentina-eligible · 24h recency</p>
     <p>Next update: {(datetime.now() + timedelta(days=1)).strftime('%A, %B %d · 8:00 AM ART')}</p>
-  </div>
+  </footer>
 
 </div>
+
+<script>
+const activeSources = new Set();
+
+function toggleSource(btn) {{
+  const src = btn.dataset.source;
+  if (activeSources.has(src)) {{
+    activeSources.delete(src);
+    btn.classList.remove('active');
+  }} else {{
+    activeSources.add(src);
+    btn.classList.add('active');
+  }}
+  filterCards();
+}}
+
+function filterCards() {{
+  const minScore = parseInt(document.getElementById('scoreSlider').value);
+  document.getElementById('scoreVal').textContent = minScore;
+  const cards = document.querySelectorAll('.card');
+  let visible = 0;
+  cards.forEach(c => {{
+    const score = parseInt(c.dataset.score);
+    const source = c.dataset.source;
+    const passScore = score >= minScore;
+    const passSource = activeSources.size === 0 || activeSources.has(source);
+    if (passScore && passSource) {{
+      c.classList.remove('hidden');
+      visible++;
+    }} else {{
+      c.classList.add('hidden');
+    }}
+  }});
+  document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+}}
+</script>
 </body>
 </html>"""
     return html
-
 
 def send_email(html_content, job_count):
     if not EMAIL_PASSWORD:
