@@ -479,24 +479,35 @@ def score_job(title, company, description, location, salary_text=""):
         if exc.lower() in title_lower:
             return -1, [f"Excluded: '{exc}'"]
 
-    # Location exclusion — reject roles tied to specific non-remote locations
-    LOCATION_EXCLUSIONS = [
-        # Regions
-        "africa", "nigeria", "kenya", "cape town", "lagos", "nairobi",
-        "india only", "china only", "japan only",
-        "on-site only", "onsite only", "in-office only",
-        # Major cities (excluded when "remote" is NOT also mentioned)
-        "san francisco", "new york", "los angeles", "chicago", "seattle",
-        "london", "berlin", "paris", "tokyo", "singapore", "hong kong",
-        "sydney", "toronto", "dubai", "mumbai", "bangalore",
-        "santiago", "são paulo", "sao paulo",
-    ]
+    # Location filter — WHITELIST approach
+    # If location mentions a specific place, it must be accessible from Argentina
     loc_lower = location.lower()
-    for loc_exc in LOCATION_EXCLUSIONS:
-        if loc_exc in loc_lower and "remote" not in loc_lower:
-            return -1, [f"Location excluded: '{loc_exc}'"]
+
+    # These locations are always acceptable
+    LOCATION_WHITELIST = [
+        "remote", "worldwide", "global", "anywhere", "distributed",
+        "work from home", "wfh", "all locations", "any location",
+        # LATAM
+        "argentina", "buenos aires", "caba", "latam", "latin america",
+        "south america", "americas",
+        # Close enough time zones / commonly LATAM-inclusive
+        "brazil", "brasil", "colombia", "chile", "peru", "uruguay",
+        "mexico", "costa rica", "ecuador",
+    ]
+
+    # If location is blank or generic, it's fine
+    loc_is_acceptable = (
+        not loc_lower
+        or loc_lower in ("", "remote", "unknown")
+        or any(w in loc_lower for w in LOCATION_WHITELIST)
+    )
+
+    if not loc_is_acceptable:
+        # Location mentions somewhere specific not in whitelist → reject
+        return -1, [f"Location not accessible: '{location}'"]
+
     # Also check title for region-specific roles
-    for loc_exc in ["- africa", "- india", "- nigeria", "- kenya", "- china", "- japan", "- apac", "- emea"]:
+    for loc_exc in ["- africa", "- india", "- pakistan", "- china", "- japan", "- apac", "- emea", "- uk", "- eu "]:
         if loc_exc in title_lower:
             return -1, [f"Region-specific role: '{loc_exc}'"]
 
