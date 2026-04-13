@@ -81,8 +81,8 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 465
 
 SALARY_FLOOR = 40000          # USD annual minimum. No-salary jobs are KEPT.
-MIN_RELEVANCE_SCORE = 35      # 0-100
-RECENCY_HOURS = 24            # Only jobs posted in the last N hours
+MIN_RELEVANCE_SCORE = 25      # 0-100
+RECENCY_HOURS = 72            # Only jobs posted in the last N hours
 CACHE_FILE = "jobs_cache.json"
 CACHE_MAX_AGE_DAYS = 30
 
@@ -664,7 +664,7 @@ def scrape_cryptojobslist(session):
             except Exception:
                 continue
 
-    log.info(f"Crypto Jobs List: {len(jobs)} jobs (24h)")
+    log.info(f"Crypto Jobs List: {len(jobs)} jobs")
     return jobs
 
 
@@ -731,7 +731,7 @@ def scrape_web3career(session):
             except Exception:
                 continue
 
-    log.info(f"Web3.career: {len(jobs)} jobs (24h)")
+    log.info(f"Web3.career: {len(jobs)} jobs")
     return jobs
 
 
@@ -769,7 +769,7 @@ def scrape_cryptocurrencyjobs(session):
         except Exception:
             continue
 
-    log.info(f"CryptocurrencyJobs: {len(jobs)} jobs (24h)")
+    log.info(f"CryptocurrencyJobs: {len(jobs)} jobs")
     return jobs
 
 
@@ -807,7 +807,7 @@ def scrape_remote3(session):
         except Exception:
             continue
 
-    log.info(f"Remote3: {len(jobs)} jobs (24h)")
+    log.info(f"Remote3: {len(jobs)} jobs")
     return jobs
 
 
@@ -844,7 +844,7 @@ def scrape_froog(session):
             except Exception:
                 continue
 
-    log.info(f"Froog: {len(jobs)} jobs (24h)")
+    log.info(f"Froog: {len(jobs)} jobs")
     return jobs
 
 
@@ -876,7 +876,7 @@ def scrape_useweb3(session):
         except Exception:
             continue
 
-    log.info(f"useWeb3: {len(jobs)} jobs (24h)")
+    log.info(f"useWeb3: {len(jobs)} jobs")
     return jobs
 
 
@@ -908,7 +908,7 @@ def scrape_jobstash(session):
         except Exception:
             continue
 
-    log.info(f"JobStash: {len(jobs)} jobs (24h)")
+    log.info(f"JobStash: {len(jobs)} jobs")
     return jobs
 
 
@@ -947,7 +947,7 @@ def scrape_remotive(session):
         except Exception:
             continue
 
-    log.info(f"Remotive: {len(jobs)} jobs (24h)")
+    log.info(f"Remotive: {len(jobs)} jobs")
     return jobs
 
 
@@ -990,7 +990,7 @@ def scrape_weworkremotely(session):
             except Exception:
                 continue
 
-    log.info(f"WeWorkRemotely: {len(jobs)} jobs (24h)")
+    log.info(f"WeWorkRemotely: {len(jobs)} jobs")
     return jobs
 
 
@@ -1040,7 +1040,7 @@ def scrape_himalayas(session):
         except Exception:
             continue
 
-    log.info(f"Himalayas: {len(jobs)} jobs (24h)")
+    log.info(f"Himalayas: {len(jobs)} jobs")
     return jobs
 
 
@@ -1105,7 +1105,7 @@ def scrape_jobicy(session):
     except Exception:
         pass
 
-    log.info(f"Jobicy: {len(jobs)} jobs (24h)")
+    log.info(f"Jobicy: {len(jobs)} jobs")
     return jobs
 
 
@@ -1137,7 +1137,7 @@ def scrape_dailyremote(session):
         except Exception:
             continue
 
-    log.info(f"DailyRemote: {len(jobs)} jobs (24h)")
+    log.info(f"DailyRemote: {len(jobs)} jobs")
     return jobs
 
 
@@ -1168,7 +1168,7 @@ def scrape_workingnomads(session):
     except Exception:
         pass
 
-    log.info(f"Working Nomads: {len(jobs)} jobs (24h)")
+    log.info(f"Working Nomads: {len(jobs)} jobs")
     return jobs
 
 
@@ -1202,7 +1202,7 @@ def scrape_remoteok(session):
     except Exception:
         pass
 
-    log.info(f"RemoteOK: {len(jobs)} jobs (24h)")
+    log.info(f"RemoteOK: {len(jobs)} jobs")
     return jobs
 
 
@@ -1257,7 +1257,7 @@ def scrape_getonboard(session):
             except Exception:
                 continue
 
-    log.info(f"GetOnBoard: {len(jobs)} jobs (24h)")
+    log.info(f"GetOnBoard: {len(jobs)} jobs")
     return jobs
 
 
@@ -1301,7 +1301,7 @@ def scrape_torre(session):
         except Exception:
             continue
 
-    log.info(f"Torre: {len(jobs)} jobs (24h)")
+    log.info(f"Torre: {len(jobs)} jobs")
     return jobs
 
 
@@ -1344,7 +1344,7 @@ def scrape_cryptojobs_com(session):
         except Exception:
             continue
 
-    log.info(f"CryptoJobs.com: {len(jobs)} jobs (24h)")
+    log.info(f"CryptoJobs.com: {len(jobs)} jobs")
     return jobs
 
 
@@ -1383,7 +1383,7 @@ def scrape_myweb3jobs(session):
         except Exception:
             continue
 
-    log.info(f"MyWeb3Jobs: {len(jobs)} jobs (24h)")
+    log.info(f"MyWeb3Jobs: {len(jobs)} jobs")
     return jobs
 
 
@@ -1424,7 +1424,7 @@ def scrape_beincrypto(session):
         except Exception:
             continue
 
-    log.info(f"BeInCrypto Jobs: {len(jobs)} jobs (24h)")
+    log.info(f"BeInCrypto Jobs: {len(jobs)} jobs")
     return jobs
 
 
@@ -1463,7 +1463,7 @@ def scrape_blockchain_association(session):
         except Exception:
             continue
 
-    log.info(f"Blockchain Association: {len(jobs)} jobs (24h)")
+    log.info(f"Blockchain Association: {len(jobs)} jobs")
     return jobs
 
 
@@ -1500,7 +1500,7 @@ def scrape_hirechain(session):
         except Exception:
             continue
 
-    log.info(f"HireChain: {len(jobs)} jobs (24h)")
+    log.info(f"HireChain: {len(jobs)} jobs")
     return jobs
 
 
@@ -1541,7 +1541,7 @@ def scrape_pantera(session):
         except Exception:
             continue
 
-    log.info(f"Pantera Capital: {len(jobs)} jobs (24h)")
+    log.info(f"Pantera Capital: {len(jobs)} jobs")
     return jobs
 
 
@@ -1580,7 +1580,7 @@ def scrape_axiomrecruit(session):
         except Exception:
             continue
 
-    log.info(f"Axiom Recruit: {len(jobs)} jobs (24h)")
+    log.info(f"Axiom Recruit: {len(jobs)} jobs")
     return jobs
 
 
@@ -1630,7 +1630,7 @@ def scrape_talentweb3(session):
             except Exception:
                 continue
 
-    log.info(f"TalentWeb3: {len(jobs)} jobs (24h)")
+    log.info(f"TalentWeb3: {len(jobs)} jobs")
     return jobs
 
 
@@ -1663,7 +1663,7 @@ def scrape_linkedin_guest_api(session):
             f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
             f"?keywords={quote_plus(keywords)}"
             f"&location={quote_plus(location)}"
-            f"&f_TPR=r86400"  # Last 24 hours
+            f"&f_TPR=r86400"  # Last 72 hours
             f"&f_WT=2"        # Remote
             f"&start=0"
             f"&count=25"
@@ -1735,7 +1735,7 @@ def scrape_linkedin_guest_api(session):
             except Exception:
                 continue
 
-    log.info(f"LinkedIn (Guest API): {len(jobs)} jobs (24h)")
+    log.info(f"LinkedIn (Guest API): {len(jobs)} jobs")
     return jobs
 
 
@@ -1834,6 +1834,95 @@ def scrape_ddg_general(session):
 
 
 # ============================================================================
+# SCRAPERS — TELEGRAM CHANNELS (public web view, no API needed)
+# ============================================================================
+
+# Add your Telegram channel usernames here (without @)
+TELEGRAM_JOB_CHANNELS = [
+    "illuminatiJOBS",
+    "degencryptojobs",
+    "web3hiring",
+    "cryptojobslist",
+    "jobstash",
+    "DeJob_Global",
+    "talentatweb3",
+]
+
+def scrape_telegram_channels(session):
+    """Scrape public Telegram channels via t.me/s/ web view."""
+    jobs = []
+
+    for channel in TELEGRAM_JOB_CHANNELS:
+        url = f"https://t.me/s/{channel}"
+        resp = safe_get(session, url)
+        if not resp:
+            continue
+
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # Telegram public view shows messages in div.tgme_widget_message_wrap
+        for msg in soup.select("div.tgme_widget_message_wrap, div.tgme_widget_message"):
+            try:
+                text_el = msg.select_one("div.tgme_widget_message_text, div.js-message_text")
+                if not text_el:
+                    continue
+                text = text_el.get_text(strip=True)
+                if not text or len(text) < 30:
+                    continue
+
+                # Check if this message looks like a job posting
+                job_indicators = [
+                    "hiring", "we're hiring", "looking for", "job opening",
+                    "community manager", "growth", "marketing", "kol",
+                    "apply", "remote", "join our team", "open position",
+                    "head of", "lead", "manager",
+                ]
+                text_lower = text.lower()
+                if not any(ind in text_lower for ind in job_indicators):
+                    continue
+
+                # Get date
+                date_el = msg.select_one("time, a.tgme_widget_message_date time, [datetime]")
+                posted = ""
+                if date_el:
+                    posted = date_el.get("datetime", "") or date_el.get_text(strip=True)
+                if posted and not is_within_24h(posted):
+                    continue
+
+                # Get link to the message
+                link_el = msg.select_one("a.tgme_widget_message_date, a[href*='t.me']")
+                href = link_el.get("href", "") if link_el else f"https://t.me/s/{channel}"
+
+                # Also look for external links in the message (apply links)
+                external_links = text_el.select("a[href]")
+                apply_link = ""
+                for el in external_links:
+                    h = el.get("href", "")
+                    if h and "t.me" not in h and h.startswith("http"):
+                        apply_link = h
+                        break
+
+                # Extract a title from the first line
+                lines = text.split('\n')
+                title = lines[0][:120].strip()
+                desc = text[:500]
+
+                j = make_job(
+                    title, channel, "Remote",
+                    apply_link or href,
+                    desc, f"Telegram @{channel}",
+                    posted_date=posted
+                )
+                if j:
+                    jobs.append(j)
+            except Exception:
+                continue
+
+    log.info(f"Telegram channels: {len(jobs)} jobs ({len(TELEGRAM_JOB_CHANNELS)} channels)")
+    return jobs
+
+
+# ============================================================================
 # PIPELINE
 # ============================================================================
 
@@ -1871,6 +1960,8 @@ ALL_SCRAPERS = [
     ("LinkedIn (via DDG)", scrape_ddg_linkedin),
     ("X/Twitter (via DDG)", scrape_ddg_twitter),
     ("DuckDuckGo", scrape_ddg_general),
+    # Telegram
+    ("Telegram", scrape_telegram_channels),
 ]
 
 
@@ -1926,7 +2017,7 @@ def filter_and_score(jobs):
 
     scored.sort(key=lambda j: j["score"], reverse=True)
     save_cache(cache)
-    log.info(f"✅ {len(scored)} jobs passed (score ≥ {MIN_RELEVANCE_SCORE}, 24h, with links)")
+    log.info(f"✅ {len(scored)} jobs passed (score ≥ {MIN_RELEVANCE_SCORE}, with links)")
     return scored
 
 
@@ -2166,7 +2257,7 @@ h1,h2,h3{{font-family:'Manrope',system-ui,sans-serif}}
   <header class="hdr">
     <div class="hdr-eye">Job Search Agent</div>
     <h1>Daily Digest</h1>
-    <p class="hdr-date">{today} · {time_str} · Last 24 hours</p>
+    <p class="hdr-date">{today} · {time_str} · Last 72 hours</p>
     <div class="stats">
       <div><div class="stat-n">{len(jobs)}</div><div class="stat-l">Matches</div></div>
       <div><div class="stat-n">{len(sources)}</div><div class="stat-l">Sources</div></div>
@@ -2194,7 +2285,7 @@ h1,h2,h3{{font-family:'Manrope',system-ui,sans-serif}}
 
   <footer class="ftr">
     <p><strong>Eugenio García de la Torre</strong> · Job Search Agent v2</p>
-    <p>20 sources · Remote only · $40K+ · Argentina-eligible · 24h recency</p>
+    <p>20 sources · Remote only · $40K+ · Argentina-eligible · 72h recency</p>
     <p>Next update: {(datetime.now() + timedelta(days=1)).strftime('%A, %B %d · 8:00 AM ART')}</p>
   </footer>
 
