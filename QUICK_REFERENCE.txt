@@ -1,0 +1,29 @@
+╔══════════════════════════════════════════════════════════════════╗
+║        🎯 JOB SEARCH AGENT v2 — QUICK REFERENCE                ║
+║        Eugenio García de la Torre                               ║
+║        30 Sources · 24h Recency · Direct Links                  ║
+╚══════════════════════════════════════════════════════════════════╝
+
+▸ INSTALL:   pip install requests beautifulsoup4
+▸ CONFIGURE: cp .env.template .env → set EMAIL_PASSWORD → source .env
+▸ RUN:       python3 job_search_agent_v2.py
+▸ DRY RUN:   python3 job_search_agent_v2.py --dry-run
+▸ VERBOSE:   python3 job_search_agent_v2.py --verbose
+
+▸ 30 SOURCES
+  WEB3 (15): CryptoJobsList · Web3.career · CryptocurrencyJobs
+             Remote3 · Froog · useWeb3 · JobStash
+             CryptoJobs.com · MyWeb3Jobs · BeInCrypto Jobs
+             Blockchain Association · HireChain
+             Pantera Capital · Axiom Recruit · TalentWeb3
+  REMOTE (8): Remotive · WWR · Himalayas · Wellfound
+              Jobicy · DailyRemote · WorkingNomads · RemoteOK
+  LATAM (2):  GetOnBoard · Torre
+  GOOGLE (5): LinkedIn · X/Twitter · Indeed · Glassdoor · Misc
+
+▸ KEY FILTERS
+  ✓ 24h recency only     ✓ Direct links required
+  ✓ $40K+ floor          ✓ No interns/juniors
+  ✓ Score ≥ 35           ✓ Dedup across sources
+
+▸ TUNE: edit MIN_RELEVANCE_SCORE or RECENCY_HOURS in script
