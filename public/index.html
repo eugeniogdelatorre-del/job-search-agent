@@ -1,5 +1,461 @@
 <!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Job Digest</title>
-<style>body{background:#0a0a0b;color:#e4e4e7;font-family:system-ui;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
-.msg{text-align:center}h1{font-size:24px;margin-bottom:8px}p{color:#71717a;font-size:14px}</style>
-</head><body><div class="msg"><h1>Job Digest</h1><p>Waiting for first run. Trigger manually in GitHub Actions or wait for 8 AM ART.</p></div></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Job Digest — Monday, April 13, 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --surface: #141416;
+    --surface2: #1c1c1f;
+    --border: #2a2a2e;
+    --text: #e4e4e7;
+    --text2: #a1a1aa;
+    --text3: #71717a;
+    --accent: #6366f1;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --blue: #3b82f6;
+    --radius: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .container { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 48px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+  .header-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .header-date {
+    color: var(--text3);
+    font-size: 14px;
+    margin-top: 8px;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 24px;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+  }
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  /* Source tags */
+  .sources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+  .source-tag {
+    font-size: 11px;
+    padding: 4px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .source-tag strong { color: var(--text2); }
+
+  /* Job cards */
+  .job-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+  .job-card:hover {
+    border-color: #3a3a40;
+  }
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .job-info { flex: 1; }
+  .job-title {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+  .job-title a {
+    color: var(--text);
+    text-decoration: none;
+  }
+  .job-title a:hover {
+    color: var(--accent);
+  }
+  .job-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--text3);
+  }
+  .meta-item { display: flex; align-items: center; gap: 4px; }
+  .meta-icon { font-size: 8px; color: var(--text3); opacity: 0.5; }
+  .source { color: var(--accent); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 52px;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .score-num {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--sc);
+  }
+  .score-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    margin-top: 1px;
+  }
+  .job-desc {
+    font-size: 13px;
+    color: var(--text3);
+    margin: 12px 0;
+    line-height: 1.5;
+  }
+  .job-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+  }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; }
+  .badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .badge-salary { background: #1e3a2f; color: #34d399; border: 1px solid #065f46; }
+  .badge-latam { background: #2d2006; color: #fbbf24; border: 1px solid #78350f; }
+  .badge-web3 { background: #1e1b4b; color: #818cf8; border: 1px solid #3730a3; }
+  .apply-btn {
+    font-size: 13px;
+    padding: 8px 20px;
+    background: var(--accent);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+  .apply-btn:hover { opacity: 0.85; }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+  .empty-state h3 { color: var(--text2); margin-bottom: 8px; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+    color: var(--text3);
+    font-size: 12px;
+  }
+  .footer p { margin: 4px 0; }
+  .footer strong { color: var(--text2); }
+
+  @media (max-width: 600px) {
+    .container { padding: 20px 16px 60px; }
+    .header h1 { font-size: 22px; }
+    .stats-row { gap: 20px; }
+    .job-header { flex-direction: column; }
+    .score { flex-direction: row; gap: 8px; align-self: flex-start; }
+    .job-footer { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .apply-btn { width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-eyebrow">Job Search Agent</div>
+    <h1>Daily Digest</h1>
+    <p class="header-date">Monday, April 13, 2026 · Updated 12:37 AM · Last 24 hours</p>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num">9</div>
+        <div class="stat-label">Matches</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Sources</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">55</div>
+        <div class="stat-label">Top Score</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sources">
+    <span class="source-tag">TalentWeb3 <strong>4</strong></span><span class="source-tag">GetOnBoard <strong>3</strong></span><span class="source-tag">CryptoJobs.com <strong>1</strong></span><span class="source-tag">MyWeb3Jobs <strong>1</strong></span>
+  </div>
+
+  
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-info">
+            <h3 class="job-title"><a href="https://www.getonbrd.com/jobs/digital-marketing/amazon-category-growth-manager-hadley-designs-remote" target="_blank" rel="noopener">Amazon Category Growth Manager</a></h3>
+            <div class="job-meta">
+              <span class="meta-item"><span class="meta-icon">◆</span> Unknown</span>
+              <span class="meta-item"><span class="meta-icon">◇</span> LATAM / Remote</span>
+              <span class="meta-item source">GetOnBoard</span>
+            </div>
+          </div>
+          <div class="score" style="--sc: #f59e0b">
+            <span class="score-num">55</span>
+            <span class="score-label">Good</span>
+          </div>
+        </div>
+        <p class="job-desc">Amazon Category Growth ManagerFull timeHadley DesignsRemoteApr 09</p>
+        <div class="job-footer">
+          <div class="badges"><span class="badge badge-latam">LATAM/ES</span></div>
+          <a href="https://www.getonbrd.com/jobs/digital-marketing/amazon-category-growth-manager-hadley-designs-remote" target="_blank" rel="noopener" class="apply-btn">View Role →</a>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-info">
+            <h3 class="job-title"><a href="https://www.cryptojobs.com/job/growth-manager-binance-academy-12088" target="_blank" rel="noopener">Growth Manager, Binance Academy</a></h3>
+            <div class="job-meta">
+              <span class="meta-item"><span class="meta-icon">◆</span> Unknown</span>
+              <span class="meta-item"><span class="meta-icon">◇</span> Remote</span>
+              <span class="meta-item source">CryptoJobs.com</span>
+            </div>
+          </div>
+          <div class="score" style="--sc: #6b7280">
+            <span class="score-num">45</span>
+            <span class="score-label">Moderate</span>
+          </div>
+        </div>
+        <p class="job-desc">Growth Manager, Binance Academy</p>
+        <div class="job-footer">
+          <div class="badges"></div>
+          <a href="https://www.cryptojobs.com/job/growth-manager-binance-academy-12088" target="_blank" rel="noopener" class="apply-btn">View Role →</a>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-info">
+            <h3 class="job-title"><a href="https://www.talentweb3.co/job/cb083d04" target="_blank" rel="noopener">Senior Global Events Marketing Manager, Executive EngagementRipple</a></h3>
+            <div class="job-meta">
+              <span class="meta-item"><span class="meta-icon">◆</span> Unknown</span>
+              <span class="meta-item"><span class="meta-icon">◇</span> Remote</span>
+              <span class="meta-item source">TalentWeb3</span>
+            </div>
+          </div>
+          <div class="score" style="--sc: #6b7280">
+            <span class="score-num">45</span>
+            <span class="score-label">Moderate</span>
+          </div>
+        </div>
+        <p class="job-desc">RSenior Global Events Marketing Manager, Executive EngagementRipple·Marketing·San Francisco·$168,0003 days agoView</p>
+        <div class="job-footer">
+          <div class="badges"></div>
+          <a href="https://www.talentweb3.co/job/cb083d04" target="_blank" rel="noopener" class="apply-btn">View Role →</a>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-info">
+            <h3 class="job-title"><a href="https://www.talentweb3.co/job/cb083d04" target="_blank" rel="noopener">Senior Global Events Marketing Manager, Executive Engagement</a></h3>
+            <div class="job-meta">
+              <span class="meta-item"><span class="meta-icon">◆</span> Unknown</span>
+              <span class="meta-item"><span class="meta-icon">◇</span> Remote</span>
+              <span class="meta-item source">TalentWeb3</span>
+            </div>
+          </div>
+          <div class="score" style="--sc: #6b7280">
+            <span class="score-num">45</span>
+            <span class="score-label">Moderate</span>
+          </div>
+        </div>
+        <p class="job-desc">Senior Global Events Marketing Manager, Executive Engagement</p>
+        <div class="job-footer">
+          <div class="badges"></div>
+          <a href="https://www.talentweb3.co/job/cb083d04" target="_blank" rel="noopener" class="apply-btn">View Role →</a>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-info">
+            <h3 class="job-title"><a href="https://www.talentweb3.co/job/ada8889d" target="_blank" rel="noopener">Creator Partnerships Manager, Binance SquareBinance</a></h3>
+            <div class="job-meta">
+              <span class="meta-item"><span class="meta-icon">◆</span> Unknown</span>
+              <span class="meta-item"><span class="meta-icon">◇</span> Remote</span>
+              <span class="meta-item source">TalentWeb3</span>
+            </div>
+          </div>
+          <div class="score" style="--sc: #6b7280">
+            <span class="score-num">45</span>
+            <span class="score-label">Moderate</span>
+          </div>
+        </div>
+        <p class="job-desc">BCreator Partnerships Manager, Binance SquareBinance·Business Development·Buenos Aires·~$80K - $131K (est. USD)3 days agoView</p>
+        <div class="job-footer">
+          <div class="badges"><span class="badge badge-latam">LATAM/ES</span></div>
+          <a href="https://www.talentweb3.co/job/ada8889d" target="_blank" rel="noopener" class="apply-btn">View Role →</a>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-info">
+            <h3 class="job-title"><a href="https://myweb3jobs.com/jobtag/community-manager/" target="_blank" rel="noopener">community manager</a></h3>
+            <div class="job-meta">
+              <span class="meta-item"><span class="meta-icon">◆</span> Unknown</span>
+              <span class="meta-item"><span class="meta-icon">◇</span> Remote</span>
+              <span class="meta-item source">MyWeb3Jobs</span>
+            </div>
+          </div>
+          <div class="score" style="--sc: #6b7280">
+            <span class="score-num">40</span>
+            <span class="score-label">Moderate</span>
+          </div>
+        </div>
+        <p class="job-desc">community manager</p>
+        <div class="job-footer">
+          <div class="badges"></div>
+          <a href="https://myweb3jobs.com/jobtag/community-manager/" target="_blank" rel="noopener" class="apply-btn">View Role →</a>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-info">
+            <h3 class="job-title"><a href="https://www.talentweb3.co/job/d8919c4e" target="_blank" rel="noopener">Senior Field Marketing ManagerChainalysis</a></h3>
+            <div class="job-meta">
+              <span class="meta-item"><span class="meta-icon">◆</span> Unknown</span>
+              <span class="meta-item"><span class="meta-icon">◇</span> Remote</span>
+              <span class="meta-item source">TalentWeb3</span>
+            </div>
+          </div>
+          <div class="score" style="--sc: #6b7280">
+            <span class="score-num">40</span>
+            <span class="score-label">Moderate</span>
+          </div>
+        </div>
+        <p class="job-desc">CSenior Field Marketing ManagerChainalysis·Field Marketing·New York·~$88K - $144K (est. USD)5 days agoView</p>
+        <div class="job-footer">
+          <div class="badges"></div>
+          <a href="https://www.talentweb3.co/job/d8919c4e" target="_blank" rel="noopener" class="apply-btn">View Role →</a>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-info">
+            <h3 class="job-title"><a href="https://www.getonbrd.com/jobs/programming/desarrollador-fullstack-hibrido-bc-tecnologia-santiago-f729/?gb_medium=widget_related_jobs&gb_name=desarrollador-fullstack-hibrido-bc-tecnologia-santiago-f729" target="_blank" rel="noopener">Desarrollador Full-Stack (Híbrido)BC Tecnología —SantiagoThis job is performed partly from home and partly at the office</a></h3>
+            <div class="job-meta">
+              <span class="meta-item"><span class="meta-icon">◆</span> Unknown</span>
+              <span class="meta-item"><span class="meta-icon">◇</span> LATAM / Remote</span>
+              <span class="meta-item source">GetOnBoard</span>
+            </div>
+          </div>
+          <div class="score" style="--sc: #6b7280">
+            <span class="score-num">35</span>
+            <span class="score-label">Moderate</span>
+          </div>
+        </div>
+        <p class="job-desc">Desarrollador Full-Stack (Híbrido)BC Tecnología —SantiagoThis job is performed partly from home and partly at the office in:Santiago(Hybrid)Apply now</p>
+        <div class="job-footer">
+          <div class="badges"><span class="badge badge-latam">LATAM/ES</span></div>
+          <a href="https://www.getonbrd.com/jobs/programming/desarrollador-fullstack-hibrido-bc-tecnologia-santiago-f729/?gb_medium=widget_related_jobs&gb_name=desarrollador-fullstack-hibrido-bc-tecnologia-santiago-f729" target="_blank" rel="noopener" class="apply-btn">View Role →</a>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-info">
+            <h3 class="job-title"><a href="https://www.getonbrd.com/jobs/innovacion-agilidad/enterprise-customer-success-onboarding-pm-elevateos-remote-6000" target="_blank" rel="noopener">Enterprise Customer Success & Onboarding PMFull time🚀 Responde rápido</a></h3>
+            <div class="job-meta">
+              <span class="meta-item"><span class="meta-icon">◆</span> Unknown</span>
+              <span class="meta-item"><span class="meta-icon">◇</span> LATAM / Remote</span>
+              <span class="meta-item source">GetOnBoard</span>
+            </div>
+          </div>
+          <div class="score" style="--sc: #6b7280">
+            <span class="score-num">35</span>
+            <span class="score-label">Moderate</span>
+          </div>
+        </div>
+        <p class="job-desc">Enterprise Customer Success & Onboarding PMFull time🚀 Responde rápidoElevateOSRemote3000 - 4000 USD/mesmar 30</p>
+        <div class="job-footer">
+          <div class="badges"><span class="badge badge-latam">LATAM/ES</span></div>
+          <a href="https://www.getonbrd.com/jobs/innovacion-agilidad/enterprise-customer-success-onboarding-pm-elevateos-remote-6000" target="_blank" rel="noopener" class="apply-btn">View Role →</a>
+        </div>
+      </div>
+
+  <div class="footer">
+    <p><strong>Eugenio García de la Torre</strong> · Job Search Agent v2</p>
+    <p>20 sources · Remote only · $40K+ · 24h recency · Argentina-eligible</p>
+    <p>Next update: Tuesday, April 14 · 8:00 AM ART</p>
+  </div>
+
+</div>
+</body>
+</html>
