@@ -80,8 +80,8 @@ RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", EMAIL_ADDRESS)
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 465
 
-SALARY_FLOOR = 40000          # USD annual minimum. No-salary jobs are KEPT.
-MIN_RELEVANCE_SCORE = 30      # 0-100 — raised from 25 to cut noise
+SALARY_FLOOR = 30000          # USD annual minimum. No-salary jobs are KEPT.
+MIN_RELEVANCE_SCORE = 50      # 0-100
 RECENCY_HOURS = 72            # Only jobs posted in the last N hours
 CACHE_FILE = "jobs_cache.json"
 CACHE_MAX_AGE_DAYS = 30
@@ -99,20 +99,22 @@ USER_AGENT = (
 
 PRIMARY_ROLES = [
     "Community Manager", "Community Lead", "Head of Community",
-    "Community Director", "Growth Manager", "Growth Lead",
-    "Head of Growth", "Growth Strategist", "Marketing Manager",
-    "KOL Manager", "KOL Lead", "Influencer Marketing",
-    "Influencer Relations", "Ambassador Program", "Ecosystem Lead",
-    "Community Operations", "Social Media Lead",
+    "Community Director", "Community Operations",
+    "Growth Manager", "Growth Lead", "Head of Growth", "Growth Strategist",
+    "KOL Manager", "KOL Lead",
+    "Ecosystem Lead", "Ambassador Program",
+    "Influencer Marketing Manager", "Influencer Marketing Lead",
+    "Influencer Relations", "Social Media Lead",
 ]
 
 SECONDARY_ROLES = [
-    "Operations Manager", "Social Media Manager", "Content Strategist",
+    "Marketing Manager", "Marketing Lead", "Marketing Coordinator",
+    "Social Media Manager", "Content Strategist", "Content Marketing",
     "Partnerships Manager", "Developer Relations", "DevRel",
     "Business Development", "BD Manager", "Regional Lead",
     "LATAM Lead", "Regional Manager", "Chief of Staff",
     "Engagement Manager", "User Acquisition", "Brand Manager",
-    "Content Marketing", "Growth Hacker", "Go-to-Market",
+    "Growth Hacker", "Go-to-Market",
 ]
 
 WEB3_KEYWORDS = [
@@ -483,55 +485,38 @@ def score_job(title, company, description, location, salary_text="", source=""):
     reasons = []
     text_blob = f"{title} {company} {description} {location}".lower()
     title_lower = title.lower()
+    desc_lower = description.lower()
 
-    # Exclusion check
+    # ── GATE 1: Exclusion list ─────────────────────────────────────────────────
     for exc in EXCLUSIONS:
         if exc.lower() in title_lower:
             return -1, [f"Excluded: '{exc}'"]
 
-    # ── WEB3 GATE ──────────────────────────────────────────────────────────────
-    # Jobs from non-Web3 sources (GetOnBoard, LinkedIn, Remotive, etc.) must have
-    # at least 1 Web3 keyword somewhere in the text. Without it they score max 20,
-    # which is below MIN_RELEVANCE_SCORE=30, so they never appear.
-    is_web3_source = any(s.lower() in source.lower() for s in WEB3_NATIVE_SOURCES)
-    web3_hits = sum(1 for kw in WEB3_KEYWORDS if kw.lower() in text_blob)
-    if not is_web3_source and web3_hits == 0:
-        return -1, ["No Web3 signal from non-Web3 source"]
-    # ──────────────────────────────────────────────────────────────────────────
-
-    # Location filter — WHITELIST approach
-    # If location mentions a specific place, it must be accessible from Argentina
+    # ── GATE 2: Location whitelist ─────────────────────────────────────────────
     loc_lower = location.lower()
-
-    # These locations are always acceptable
     LOCATION_WHITELIST = [
         "remote", "worldwide", "global", "anywhere", "distributed",
         "work from home", "wfh", "all locations", "any location",
-        # LATAM
         "argentina", "buenos aires", "caba", "latam", "latin america",
         "south america", "americas",
-        # Close enough time zones / commonly LATAM-inclusive
         "brazil", "brasil", "colombia", "chile", "peru", "uruguay",
         "mexico", "costa rica", "ecuador",
     ]
-
-    # If location is blank or generic, it's fine
     loc_is_acceptable = (
         not loc_lower
         or loc_lower in ("", "remote", "unknown")
         or any(w in loc_lower for w in LOCATION_WHITELIST)
     )
-
     if not loc_is_acceptable:
-        # Location mentions somewhere specific not in whitelist → reject
         return -1, [f"Location not accessible: '{location}'"]
 
-    # Also check title for region-specific roles
-    for loc_exc in ["- africa", "- india", "- pakistan", "- china", "- japan", "- apac", "- emea", "- uk", "- eu "]:
+    # Region-specific title suffixes
+    for loc_exc in ["- africa", "- india", "- pakistan", "- china", "- japan",
+                    "- apac", "- emea", "- uk", "- eu "]:
         if loc_exc in title_lower:
             return -1, [f"Region-specific role: '{loc_exc}'"]
 
-    # Reject known onsite-only cities that are NOT Buenos Aires
+    # ── GATE 3: Onsite outside Buenos Aires ───────────────────────────────────
     ONSITE_CITIES = [
         "santiago", "lima", "bogotá", "bogota", "medellín", "medellin",
         "são paulo", "sao paulo", "rio de janeiro", "quito", "montevideo",
@@ -539,130 +524,140 @@ def score_job(title, company, description, location, salary_text="", source=""):
         "new york", "san francisco", "tel aviv", "singapore", "hong kong",
         "belfast", "paris",
     ]
-    # Only reject if it's onsite/hybrid (remote roles in these cities are fine)
-    combined_lower = f"{title_lower} {loc_lower} {description.lower()}"
-    is_onsite_role = any(kw in combined_lower for kw in ["onsite", "on-site", "in-office", "presencial", "(hybrid)", "híbrido"])
+    combined_lower = f"{title_lower} {loc_lower} {desc_lower}"
+    is_onsite_role = any(kw in combined_lower for kw in [
+        "onsite", "on-site", "in-office", "presencial", "(hybrid)", "híbrido", "hibrido"
+    ])
     if is_onsite_role:
-        for city in ONSITE_CITIES:
-            if city in loc_lower or city in title_lower:
-                return -1, [f"Onsite role in non-accessible city: '{city}'"]
+        is_buenos_aires = any(ba in combined_lower for ba in ["buenos aires", "argentina", "caba"])
+        if not is_buenos_aires:
+            for city in ONSITE_CITIES:
+                if city in loc_lower or city in title_lower:
+                    return -1, [f"Onsite in non-accessible city: '{city}'"]
+            # If no specific city matched but clearly onsite with no BA mention → reject
+            if not any(ba in combined_lower for ba in ["buenos aires", "argentina", "caba", "remote"]):
+                return -1, ["Onsite/hybrid role, not accessible from Buenos Aires"]
 
-    # Hybrid/onsite rejection — allow hybrid ONLY if in Buenos Aires/Argentina
-    combined = f"{title_lower} {loc_lower} {description.lower()}"
-    for hw in HYBRID_KEYWORDS:
-        if hw in combined:
-            is_buenos_aires = any(ba in combined for ba in ["buenos aires", "argentina", "caba"])
-            if is_buenos_aires:
-                # Hybrid in Buenos Aires — keep it, small bonus
-                score += 5
-                reasons.append("+5 Hybrid in Buenos Aires")
-            elif "remote" in combined:
-                # Hybrid + remote mentioned — keep but no bonus
-                pass
-            else:
-                # Hybrid elsewhere — reject
-                return -1, [f"Hybrid/onsite not in Buenos Aires: '{hw}'"]
-            break
+    # ── GATE 4: Geo-restricted remote ─────────────────────────────────────────
+    RESTRICTED_REMOTE = [
+        "us only", "usa only", "u.s. only", "united states only",
+        "us-based", "usa-based", "us based", "usa based",
+        "must be located in the us", "must reside in the us",
+        "us residents only", "us citizens only",
+        "uk only", "uk-based", "uk based", "united kingdom only",
+        "eu only", "eu-based", "eu based", "europe only", "european union only",
+        "canada only", "canada-based", "australia only",
+        "apac only", "emea only",
+        "authorized to work in the united states",
+    ]
+    OPEN_REMOTE_SIGNALS = [
+        "worldwide", "global", "anywhere", "latam", "latin america",
+        "south america", "americas", "argentina", "buenos aires",
+        "all locations", "any location", "any country",
+    ]
+    is_open = any(p in text_blob for p in OPEN_REMOTE_SIGNALS)
+    is_restricted = any(p in text_blob for p in RESTRICTED_REMOTE)
+    if is_restricted and not is_open:
+        return -1, ["Geo-restricted remote (not accessible from Argentina)"]
 
-    # Salary floor — check explicit salary field
+    # ── GATE 5: Salary floor ($30K/year) ──────────────────────────────────────
     if salary_text:
         salary_num = extract_salary_number(salary_text)
         if salary_num and salary_num < SALARY_FLOOR:
             return -1, [f"Below ${SALARY_FLOOR:,} floor (${salary_num:,}/yr)"]
-        # Also catch hourly rates — e.g. "$15-25/hour" is fine, "$5-10/hour" is not
         hourly_match = re.search(r"\$?(\d+)\s*[-–]?\s*\$?(\d*)\s*/\s*h(?:our|r)?", salary_text.lower())
         if hourly_match:
             low_hourly = int(hourly_match.group(1))
-            annual_hourly = low_hourly * 40 * 52
-            if annual_hourly < SALARY_FLOOR:
-                return -1, [f"Hourly rate too low: ${low_hourly}/hr = ~${annual_hourly:,}/yr"]
+            if low_hourly * 40 * 52 < SALARY_FLOOR:
+                return -1, [f"Hourly rate too low: ${low_hourly}/hr"]
 
-    # Salary floor — also scan description for monthly salary mentions
+    # Scan description for explicit monthly salary below floor
     monthly_match = re.search(
-        r'(\d{3,5})\s*[-–]\s*(\d{3,5})\s*(?:USD|usd)?\s*/?(?:month|mo|monthly|pm)',
+        r'(\d{3,5})\s*[-–]\s*(\d{3,5})\s*(?:USD|usd)?\s*/?(?:month|mo|monthly)',
         text_blob
     )
     if monthly_match:
         high_monthly = int(monthly_match.group(2))
-        annual = high_monthly * 12
-        if annual < SALARY_FLOOR:
-            return -1, [f"Below floor: ${high_monthly}/mo = ${annual:,}/yr"]
+        if high_monthly * 12 < SALARY_FLOOR:
+            return -1, [f"Below floor: ${high_monthly}/mo = ${high_monthly*12:,}/yr"]
 
-    # Reject very low USD/month mentions in description (e.g. "850 USD/month")
-    low_monthly_match = re.search(r'(\d{3,4})\s*(?:USD|usd)\s*/?\s*(?:month|mo)', text_blob)
-    if low_monthly_match:
-        monthly_val = int(low_monthly_match.group(1))
-        if monthly_val * 12 < SALARY_FLOOR:
-            return -1, [f"Below floor: ${monthly_val}/mo mentioned in description"]
+    single_monthly = re.search(r'(\d{3,4})\s*(?:USD|usd)\s*/?\s*(?:month|mo)\b', text_blob)
+    if single_monthly:
+        mv = int(single_monthly.group(1))
+        if mv * 12 < SALARY_FLOOR:
+            return -1, [f"Below floor: ${mv}/mo in description"]
 
-    # Primary role (+30)
+    # ── GATE 6: Commission-only / base below $2,500/month ─────────────────────
+    COMMISSION_SIGNALS = [
+        "commission only", "commission-only", "100% commission",
+        "no base salary", "performance-based compensation only",
+        "ote only", "purely commission",
+    ]
+    if any(sig in text_blob for sig in COMMISSION_SIGNALS):
+        return -1, ["Commission-only compensation"]
+
+    # Base salary explicitly stated as very low (< $2,500/month)
+    base_match = re.search(
+        r'base\s*salary[:\s]*(?:month\s*1[:\s]*)?(\d{3,4})\s*(?:USD|USDT|usd)?',
+        text_blob
+    )
+    if base_match:
+        base_val = int(base_match.group(1))
+        if base_val < 2500 and base_val > 100:  # filter out % values
+            return -1, [f"Base salary too low: ${base_val}/mo"]
+
+    # ══ SCORING ═══════════════════════════════════════════════════════════════
+
+    # Primary role match (+50) — highest weight, checked first
+    role_matched = False
     for role in PRIMARY_ROLES:
         if role.lower() in title_lower:
-            score += 30
-            reasons.append(f"+30 Primary: {role}")
+            score += 50
+            reasons.append(f"+50 Primary: {role}")
+            role_matched = True
             break
 
-    # Secondary role (+15)
-    if score < 30:
+    # Secondary role match (+30) — only if no primary hit
+    if not role_matched:
         for role in SECONDARY_ROLES:
             if role.lower() in title_lower:
-                score += 15
-                reasons.append(f"+15 Secondary: {role}")
+                score += 30
+                reasons.append(f"+30 Secondary: {role}")
                 break
 
-    # Web3 keywords (+25 max) — already computed above in Web3 gate
+    # Web3 signal (+15 max, 5 per keyword)
+    web3_hits = sum(1 for kw in WEB3_KEYWORDS if kw.lower() in text_blob)
     if web3_hits:
-        s = min(25, web3_hits * 5)
+        s = min(15, web3_hits * 5)
         score += s
         reasons.append(f"+{s} Web3 ({web3_hits} hits)")
 
-    # Bilingual (+10)
+    # Remote / location (+15 global/LATAM, +10 generic remote)
+    is_remote = any(p in text_blob for p in ["remote", "work from home", "wfh", "anywhere", "distributed"])
+    if is_remote:
+        if is_open:
+            score += 15
+            reasons.append("+15 Remote global/LATAM")
+        else:
+            score += 10
+            reasons.append("+10 Remote")
+
+    # Bilingual / LATAM (+10)
     if any(kw.lower() in text_blob for kw in BILINGUAL_KEYWORDS):
         score += 10
         reasons.append("+10 Bilingual/LATAM")
 
-    # Vertical (+10)
+    # Salary ≥ $45K explicitly stated (+5)
+    if salary_text:
+        sal_num = extract_salary_number(salary_text)
+        if sal_num and sal_num >= 45000:
+            score += 5
+            reasons.append(f"+5 Salary ≥$45K (${sal_num:,})")
+
+    # Vertical bonus (+5)
     if any(kw.lower() in text_blob for kw in VERTICAL_BONUS_KEYWORDS):
-        score += 10
-        reasons.append("+10 Vertical match")
-
-    # Remote eligibility — smart detection for Argentina-based applicant
-    is_remote = any(p in text_blob for p in ["remote", "work from home", "wfh", "anywhere", "distributed"])
-
-    if is_remote:
-        # Check if "remote" is restricted to a region the user CAN'T access
-        RESTRICTED_REMOTE = [
-            "us only", "usa only", "u.s. only", "united states only",
-            "us-based", "usa-based", "us based", "usa based",
-            "must be located in the us", "must reside in the us",
-            "us residents only", "us citizens",
-            "uk only", "uk-based", "uk based", "united kingdom only",
-            "eu only", "eu-based", "eu based", "europe only", "european union only",
-            "canada only", "canada-based", "australia only",
-            "apac only", "emea only",
-            "must be authorized to work in the u", "work authorization required",
-        ]
-        # Check if open to LATAM / global (overrides restriction)
-        OPEN_REMOTE = [
-            "worldwide", "global", "anywhere", "latam", "latin america",
-            "south america", "americas", "argentina", "buenos aires",
-            "all locations", "any location", "any country",
-        ]
-
-        is_open = any(p in text_blob for p in OPEN_REMOTE)
-        is_restricted = any(p in text_blob for p in RESTRICTED_REMOTE)
-
-        if is_open:
-            score += 15
-            reasons.append("+15 Remote (global/LATAM)")
-        elif is_restricted:
-            return -1, ["Remote but geo-restricted (not accessible from Argentina)"]
-        else:
-            score += 10
-            reasons.append("+10 Remote")
-    elif any(p in text_blob for p in ["onsite", "on-site", "in-office"]):
-        score -= 5
-        reasons.append("-5 Non-remote")
+        score += 5
+        reasons.append("+5 Vertical match")
 
     return min(score, 100), reasons
 
@@ -1916,7 +1911,6 @@ def scrape_telegram_channels(session):
 
         soup = BeautifulSoup(resp.text, "html.parser")
 
-        # Telegram public view shows messages in div.tgme_widget_message_wrap
         for msg in soup.select("div.tgme_widget_message_wrap, div.tgme_widget_message"):
             try:
                 text_el = msg.select_one("div.tgme_widget_message_text, div.js-message_text")
@@ -1937,39 +1931,73 @@ def scrape_telegram_channels(session):
                 if not any(ind in text_lower for ind in job_indicators):
                     continue
 
-                # Get date
-                date_el = msg.select_one("time, a.tgme_widget_message_date time, [datetime]")
+                # ── Get date — prefer datetime attribute for accurate recency ──
                 posted = ""
+                # First try: <time datetime="..."> inside the message date link
+                date_el = msg.select_one("a.tgme_widget_message_date time[datetime]")
                 if date_el:
-                    posted = date_el.get("datetime", "") or date_el.get_text(strip=True)
+                    posted = date_el.get("datetime", "")
+                if not posted:
+                    # Second try: any time element with datetime attr
+                    time_el = msg.select_one("time[datetime]")
+                    if time_el:
+                        posted = time_el.get("datetime", "")
+                if not posted:
+                    # Last resort: text of any time element
+                    time_el = msg.select_one("time")
+                    if time_el:
+                        posted = time_el.get_text(strip=True)
+
                 if posted and not is_within_24h(posted):
                     continue
 
-                # Get link to the message
-                link_el = msg.select_one("a.tgme_widget_message_date, a[href*='t.me']")
-                href = link_el.get("href", "") if link_el else f"https://t.me/s/{channel}"
+                # ── Get Telegram post permalink ────────────────────────────────
+                tg_link_el = msg.select_one("a.tgme_widget_message_date")
+                tg_post_url = tg_link_el.get("href", "") if tg_link_el else f"https://t.me/s/{channel}"
+                if not tg_post_url:
+                    tg_post_url = f"https://t.me/s/{channel}"
 
-                # Also look for external links in the message (apply links)
-                external_links = text_el.select("a[href]")
+                # ── Extract external apply/job link from message body ─────────
+                # Priority: job board URLs > any non-Telegram external link
                 apply_link = ""
+                JOB_BOARD_DOMAINS = [
+                    "cryptojobslist.com", "jobstash.xyz", "web3.career",
+                    "talentweb3.co", "cryptojobs.com", "myweb3jobs.com",
+                    "linkedin.com", "greenhouse.io", "lever.co", "ashbyhq.com",
+                    "jobs.", "apply.", "careers.", "wellfound.com", "notion.so",
+                    "airtable.com", "typeform.com", "forms.gle", "bit.ly",
+                ]
+                external_links = text_el.select("a[href]")
                 for el in external_links:
                     h = el.get("href", "")
-                    if h and "t.me" not in h and h.startswith("http"):
+                    if not h or not h.startswith("http") or "t.me" in h:
+                        continue
+                    # Prefer known job board / apply domains
+                    if any(d in h for d in JOB_BOARD_DOMAINS):
                         apply_link = h
                         break
+                    # Otherwise keep first external link as candidate
+                    if not apply_link:
+                        apply_link = h
 
-                # Extract a title from the first line
-                lines = text.split('\n')
-                title = lines[0][:120].strip()
+                # Final URL: apply link if found, otherwise Telegram post
+                final_url = apply_link if apply_link else tg_post_url
+
+                # Extract a title from the first meaningful line
+                lines = [l.strip() for l in text.split('\n') if l.strip()]
+                title = lines[0][:120] if lines else text[:80]
                 desc = text[:500]
 
                 j = make_job(
                     title, channel, "Remote",
-                    apply_link or href,
+                    final_url,
                     desc, f"Telegram @{channel}",
                     posted_date=posted
                 )
                 if j:
+                    # Store both URLs so the card can show them
+                    j["apply_url"] = apply_link
+                    j["tg_url"] = tg_post_url
                     jobs.append(j)
             except Exception:
                 continue
@@ -2124,12 +2152,26 @@ def build_email_html(jobs):
         loc = job["location"].replace("<", "&lt;")
         link = job["url"]
         src = job["source"].replace("<", "&lt;")
+        apply_url = job.get("apply_url", "")
+        tg_url = job.get("tg_url", "")
+        is_telegram = src.startswith("Telegram")
+
+        # Build action buttons
+        if is_telegram and apply_url and tg_url and apply_url != tg_url:
+            action_html = f'<a href="{apply_url}" target="_blank" rel="noopener" class="btn">Apply Now</a><a href="{tg_url}" target="_blank" rel="noopener" class="btn btn-sec">View on Telegram</a>'
+        elif is_telegram and tg_url:
+            action_html = f'<a href="{tg_url}" target="_blank" rel="noopener" class="btn">View on Telegram</a>'
+        else:
+            action_html = f'<a href="{link}" target="_blank" rel="noopener" class="btn">View Role</a>'
+
+        # Title link: for Telegram use apply link if available, else tg post
+        title_href = apply_url if (is_telegram and apply_url) else (tg_url if is_telegram else link)
 
         jobs_html += f"""
       <article class="card" data-score="{score}" data-source="{src}">
         <div class="card-main">
           <div class="card-left">
-            <h3><a href="{link}" target="_blank" rel="noopener">{title}</a></h3>
+            <h3><a href="{title_href}" target="_blank" rel="noopener">{title}</a></h3>
             <div class="meta">
               <span>{company}</span>
               <span class="dot"></span>
@@ -2152,7 +2194,7 @@ def build_email_html(jobs):
           </div>
         </div>
         <div class="card-action">
-          <a href="{link}" target="_blank" rel="noopener" class="btn">View Role</a>
+          {action_html}
         </div>
       </article>"""
 
@@ -2265,7 +2307,7 @@ h1,h2,h3{{font-family:'Manrope',system-ui,sans-serif}}
 .card-right{{flex-shrink:0}}
 .ring{{width:48px;height:48px}}
 
-.card-action{{margin-top:14px;display:flex;justify-content:flex-end}}
+.card-action{{margin-top:14px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}}
 .btn{{
   font-size:13px;padding:8px 22px;border-radius:8px;
   background:rgba(99,102,241,0.12);color:var(--acc);
@@ -2274,6 +2316,11 @@ h1,h2,h3{{font-family:'Manrope',system-ui,sans-serif}}
   transition:all .2s;
 }}
 .btn:hover{{background:var(--acc);color:#fff;border-color:var(--acc)}}
+.btn-sec{{
+  background:transparent;color:var(--t3);
+  border:1px solid var(--b);
+}}
+.btn-sec:hover{{background:var(--s2);color:var(--t1);border-color:var(--b2)}}
 
 /* ── Empty ── */
 .empty{{text-align:center;padding:64px 20px;color:var(--t3)}}
