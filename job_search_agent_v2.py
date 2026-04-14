@@ -2174,11 +2174,149 @@ def collect_all_jobs():
     return all_jobs
 
 
+# Sources where card data is already reliable — skip second pass
+# (dedicated Web3 boards that show full salary/details on listing page)
+SKIP_SECOND_PASS_SOURCES = {
+    "Crypto Jobs List", "CryptoJobsList",
+    "Web3.career", "CryptocurrencyJobs",
+    "CryptoJobs.com", "MyWeb3Jobs",
+    "Blockchain Association", "HireChain",
+    "Pantera Capital", "Axiom Recruit",
+    "TalentWeb3", "Remote3", "JobStash",
+}
+
+
+def fetch_jd_text(session, url, source):
+    """Fetch the actual job description page and return its cleaned text.
+    Returns empty string on failure — caller handles gracefully."""
+    if not url or not url.startswith("http"):
+        return ""
+    # Skip LinkedIn job pages — require login for full JD
+    if "linkedin.com/jobs/view" in url:
+        return ""
+    try:
+        time.sleep(REQUEST_DELAY)
+        resp = session.get(url, timeout=REQUEST_TIMEOUT, allow_redirects=True)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # Remove nav, footer, scripts, ads
+        for tag in soup(["script", "style", "nav", "footer", "header",
+                         "aside", "iframe", "noscript"]):
+            tag.decompose()
+
+        # Prefer main content containers
+        content = (
+            soup.select_one("main, article, [class*=job-description], "
+                            "[class*=description], [class*=content], "
+                            "[id*=description], [id*=job]")
+            or soup.body
+        )
+        if not content:
+            return ""
+
+        text = re.sub(r'\s+', ' ', content.get_text(separator=' ')).strip()
+        return text[:8000]  # cap at 8K chars — enough for any JD
+    except Exception as e:
+        log.debug(f"JD fetch failed for {url}: {e}")
+        return ""
+
+
+def second_pass_verify(job, jd_text):
+    """Run hard rejection gates on full JD text.
+    Returns (passed: bool, reason: str)"""
+    if not jd_text:
+        return True, ""  # fetch failed — give benefit of the doubt
+
+    text = jd_text.lower()
+
+    # ── Salary floor ──────────────────────────────────────────────────────────
+    # Monthly range: "1200 - 1500 USD/mes" or "/month"
+    m = re.search(r'(\d{3,5})\s*[-–]\s*(\d{3,5})\s*(?:USD|usd)?\s*/?(?:mes\b|month|mo\b|monthly)', text)
+    if m:
+        high = int(m.group(2))
+        if high * 12 < SALARY_FLOOR:
+            return False, f"JD salary below floor: ${high}/mo = ${high*12:,}/yr"
+
+    # Single monthly
+    m = re.search(r'(\d{3,5})\s*(?:USD|usd)\s*/?\s*(?:mes\b|month|mo\b)', text)
+    if m:
+        mv = int(m.group(1))
+        if mv * 12 < SALARY_FLOOR:
+            return False, f"JD salary below floor: ${mv}/mo"
+
+    # Hourly rate
+    m = re.search(r'\$?(\d+)\s*[-–]?\s*\$?(\d*)\s*/\s*h(?:our|r)?', text)
+    if m:
+        low_h = int(m.group(1))
+        if 1 < low_h < 100 and low_h * 40 * 52 < SALARY_FLOOR:
+            return False, f"JD hourly rate too low: ${low_h}/hr"
+
+    # Annual explicit
+    m = re.search(r'\$(\d{2,3})k?\s*(?:USD|usd)?\s*(?:per year|annually|/year)', text)
+    if m:
+        raw = m.group(1)
+        annual = int(raw) * 1000 if len(raw) <= 3 else int(raw)
+        if annual < SALARY_FLOOR:
+            return False, f"JD annual salary too low: ${annual:,}"
+
+    # ── Commission-only ───────────────────────────────────────────────────────
+    COMMISSION_SIGNALS = [
+        "commission only", "commission-only", "100% commission",
+        "no base salary", "performance-based compensation only",
+        "ote only", "purely commission",
+    ]
+    if any(sig in text for sig in COMMISSION_SIGNALS):
+        return False, "JD: commission-only compensation"
+
+    # Base salary under $2,500/mo
+    m = re.search(r'(?:base\s*salary|month\s*1)[^0-9]{0,30}?(\d{3,4})\s*(?:USD|USDT|usd)', text)
+    if m:
+        base_val = int(m.group(1))
+        if 100 < base_val < 2500:
+            return False, f"JD base salary too low: ${base_val}/mo"
+
+    # ── Geo-restricted remote ─────────────────────────────────────────────────
+    RESTRICTED = [
+        "us only", "usa only", "united states only", "us-based", "usa-based",
+        "must be located in the us", "must reside in the us",
+        "us residents only", "us citizens only",
+        "uk only", "uk-based", "united kingdom only",
+        "eu only", "europe only", "european union only",
+        "canada only", "australia only", "apac only", "emea only",
+        "authorized to work in the united states",
+        "right to work in the uk",
+    ]
+    OPEN = [
+        "worldwide", "global", "anywhere", "latam", "latin america",
+        "south america", "americas", "argentina", "all locations", "any country",
+    ]
+    is_open = any(p in text for p in OPEN)
+    if not is_open:
+        for r in RESTRICTED:
+            if r in text:
+                return False, f"JD geo-restricted: '{r}'"
+
+    # ── If JD has salary info, update the job's salary field ─────────────────
+    # (so it shows on the card even if card didn't have it)
+    if not job.get("salary"):
+        sal_match = re.search(
+            r'(\$[\d,]+\s*[-–]\s*\$[\d,]+\s*(?:k|K)?\s*(?:USD|usd)?'
+            r'\s*(?:/\s*(?:year|yr|month|mo|annual))?)',
+            jd_text
+        )
+        if sal_match:
+            job["salary"] = sal_match.group(1).strip()
+
+    return True, ""
+
+
 def filter_and_score(jobs):
     cache = load_cache()
     scored = []
     seen = set()
     verbose = "--verbose" in sys.argv
+    session = get_session()
 
     for job in jobs:
         h = job_hash(job["title"], job["company"])
@@ -2186,10 +2324,10 @@ def filter_and_score(jobs):
             continue
         seen.add(h)
 
-        # Verify URL exists
         if not job.get("url"):
             continue
 
+        # ── Pass 1: score from card data ──────────────────────────────────────
         score, reasons = score_job(
             job["title"], job["company"],
             job["description"], job["location"],
@@ -2198,19 +2336,42 @@ def filter_and_score(jobs):
         )
 
         if verbose and score >= 0:
-            log.info(f"  [{score:3d}] {job['title'][:60]} @ {job['company'][:25]} | {job['url'][:60]}")
+            log.info(f"  [{score:3d}] {job['title'][:60]} @ {job['company'][:25]}")
             for r in reasons:
                 log.info(f"        {r}")
 
-        if score >= MIN_RELEVANCE_SCORE:
-            job["score"] = score
-            job["reasons"] = reasons
-            scored.append(job)
-            cache[h] = {"seen": datetime.now().isoformat(), "title": job["title"]}
+        if score < MIN_RELEVANCE_SCORE:
+            continue
+
+        # ── Pass 2: fetch actual JD and re-verify ────────────────────────────
+        source = job.get("source", "")
+        needs_second_pass = not any(
+            s.lower() in source.lower() for s in SKIP_SECOND_PASS_SOURCES
+        )
+
+        # Telegram: use apply_url if available (that's the real JD link)
+        jd_url = job.get("apply_url") or job.get("url", "")
+        if source.startswith("Telegram") and not job.get("apply_url"):
+            needs_second_pass = False  # no external link found, skip
+
+        if needs_second_pass:
+            log.info(f"  🔍 Fetching JD: {job['title'][:50]} @ {job['company'][:25]}")
+            jd_text = fetch_jd_text(session, jd_url, source)
+            passed, reject_reason = second_pass_verify(job, jd_text)
+            if not passed:
+                log.info(f"  ❌ JD rejected: {reject_reason}")
+                continue
+            if verbose:
+                log.info(f"  ✅ JD verified")
+
+        job["score"] = score
+        job["reasons"] = reasons
+        scored.append(job)
+        cache[h] = {"seen": datetime.now().isoformat(), "title": job["title"]}
 
     scored.sort(key=lambda j: j["score"], reverse=True)
     save_cache(cache)
-    log.info(f"✅ {len(scored)} jobs passed (score ≥ {MIN_RELEVANCE_SCORE}, with links)")
+    log.info(f"✅ {len(scored)} jobs passed both passes (score ≥ {MIN_RELEVANCE_SCORE})")
     return scored
 
 
