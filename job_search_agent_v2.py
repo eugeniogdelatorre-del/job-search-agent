@@ -81,7 +81,7 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 465
 
 SALARY_FLOOR = 40000          # USD annual minimum. No-salary jobs are KEPT.
-MIN_RELEVANCE_SCORE = 25      # 0-100
+MIN_RELEVANCE_SCORE = 30      # 0-100 — raised from 25 to cut noise
 RECENCY_HOURS = 72            # Only jobs posted in the last N hours
 CACHE_FILE = "jobs_cache.json"
 CACHE_MAX_AGE_DAYS = 30
@@ -138,6 +138,16 @@ VERTICAL_BONUS_KEYWORDS = [
     "P2E", "Play to Earn", "GameFi", "Gaming",
     "IDO", "IGO", "Token Launch", "Incubator", "Accelerator",
 ]
+
+# Sources that are Web3-specific by nature — jobs from these don't need Web3 keywords in text
+WEB3_NATIVE_SOURCES = {
+    "Crypto Jobs List", "CryptoJobsList", "JobStash", "CryptoJobs.com",
+    "MyWeb3Jobs", "BeInCrypto Jobs", "HireChain", "Pantera Capital",
+    "Blockchain Association", "Axiom Recruit", "TalentWeb3",
+    "Web3.career", "CryptocurrencyJobs", "Remote3", "Froog", "useWeb3",
+    "Telegram @cryptojobslist", "Telegram @jobstash", "Telegram @talentatweb3",
+    "Telegram @DeJob_Global", "Telegram @illuminatiJOBS", "Telegram @web3hiring",
+}
 
 EXCLUSIONS = [
     "Intern", "Internship", "Junior", "Entry Level", "Entry-Level",
@@ -468,7 +478,7 @@ def extract_salary_number(salary_text):
     return None
 
 
-def score_job(title, company, description, location, salary_text=""):
+def score_job(title, company, description, location, salary_text="", source=""):
     score = 0
     reasons = []
     text_blob = f"{title} {company} {description} {location}".lower()
@@ -478,6 +488,16 @@ def score_job(title, company, description, location, salary_text=""):
     for exc in EXCLUSIONS:
         if exc.lower() in title_lower:
             return -1, [f"Excluded: '{exc}'"]
+
+    # ── WEB3 GATE ──────────────────────────────────────────────────────────────
+    # Jobs from non-Web3 sources (GetOnBoard, LinkedIn, Remotive, etc.) must have
+    # at least 1 Web3 keyword somewhere in the text. Without it they score max 20,
+    # which is below MIN_RELEVANCE_SCORE=30, so they never appear.
+    is_web3_source = any(s.lower() in source.lower() for s in WEB3_NATIVE_SOURCES)
+    web3_hits = sum(1 for kw in WEB3_KEYWORDS if kw.lower() in text_blob)
+    if not is_web3_source and web3_hits == 0:
+        return -1, ["No Web3 signal from non-Web3 source"]
+    # ──────────────────────────────────────────────────────────────────────────
 
     # Location filter — WHITELIST approach
     # If location mentions a specific place, it must be accessible from Argentina
@@ -511,6 +531,22 @@ def score_job(title, company, description, location, salary_text=""):
         if loc_exc in title_lower:
             return -1, [f"Region-specific role: '{loc_exc}'"]
 
+    # Reject known onsite-only cities that are NOT Buenos Aires
+    ONSITE_CITIES = [
+        "santiago", "lima", "bogotá", "bogota", "medellín", "medellin",
+        "são paulo", "sao paulo", "rio de janeiro", "quito", "montevideo",
+        "san jose", "ciudad de mexico", "guadalajara", "dubai", "london",
+        "new york", "san francisco", "tel aviv", "singapore", "hong kong",
+        "belfast", "paris",
+    ]
+    # Only reject if it's onsite/hybrid (remote roles in these cities are fine)
+    combined_lower = f"{title_lower} {loc_lower} {description.lower()}"
+    is_onsite_role = any(kw in combined_lower for kw in ["onsite", "on-site", "in-office", "presencial", "(hybrid)", "híbrido"])
+    if is_onsite_role:
+        for city in ONSITE_CITIES:
+            if city in loc_lower or city in title_lower:
+                return -1, [f"Onsite role in non-accessible city: '{city}'"]
+
     # Hybrid/onsite rejection — allow hybrid ONLY if in Buenos Aires/Argentina
     combined = f"{title_lower} {loc_lower} {description.lower()}"
     for hw in HYBRID_KEYWORDS:
@@ -533,6 +569,13 @@ def score_job(title, company, description, location, salary_text=""):
         salary_num = extract_salary_number(salary_text)
         if salary_num and salary_num < SALARY_FLOOR:
             return -1, [f"Below ${SALARY_FLOOR:,} floor (${salary_num:,}/yr)"]
+        # Also catch hourly rates — e.g. "$15-25/hour" is fine, "$5-10/hour" is not
+        hourly_match = re.search(r"\$?(\d+)\s*[-–]?\s*\$?(\d*)\s*/\s*h(?:our|r)?", salary_text.lower())
+        if hourly_match:
+            low_hourly = int(hourly_match.group(1))
+            annual_hourly = low_hourly * 40 * 52
+            if annual_hourly < SALARY_FLOOR:
+                return -1, [f"Hourly rate too low: ${low_hourly}/hr = ~${annual_hourly:,}/yr"]
 
     # Salary floor — also scan description for monthly salary mentions
     monthly_match = re.search(
@@ -544,6 +587,13 @@ def score_job(title, company, description, location, salary_text=""):
         annual = high_monthly * 12
         if annual < SALARY_FLOOR:
             return -1, [f"Below floor: ${high_monthly}/mo = ${annual:,}/yr"]
+
+    # Reject very low USD/month mentions in description (e.g. "850 USD/month")
+    low_monthly_match = re.search(r'(\d{3,4})\s*(?:USD|usd)\s*/?\s*(?:month|mo)', text_blob)
+    if low_monthly_match:
+        monthly_val = int(low_monthly_match.group(1))
+        if monthly_val * 12 < SALARY_FLOOR:
+            return -1, [f"Below floor: ${monthly_val}/mo mentioned in description"]
 
     # Primary role (+30)
     for role in PRIMARY_ROLES:
@@ -560,8 +610,7 @@ def score_job(title, company, description, location, salary_text=""):
                 reasons.append(f"+15 Secondary: {role}")
                 break
 
-    # Web3 keywords (+25 max)
-    web3_hits = sum(1 for kw in WEB3_KEYWORDS if kw.lower() in text_blob)
+    # Web3 keywords (+25 max) — already computed above in Web3 gate
     if web3_hits:
         s = min(25, web3_hits * 5)
         score += s
@@ -1211,9 +1260,11 @@ def scrape_remoteok(session):
 # ============================================================================
 
 def scrape_getonboard(session):
-    """getonbrd.com — LATAM remote jobs. Only scrape actual job detail links."""
+    """getonbrd.com — LATAM remote jobs. Web3/crypto terms only to avoid noise."""
     jobs = []
-    terms = ["community", "growth", "marketing", "crypto"]
+    # Only crypto/Web3 terms — removed generic "community", "growth", "marketing"
+    # to avoid pulling unrelated LATAM roles
+    terms = ["crypto", "blockchain", "web3", "defi", "nft"]
 
     for term in terms:
         url = f"https://www.getonbrd.com/jobs?q={quote_plus(term)}&remote=true"
@@ -1238,6 +1289,13 @@ def scrape_getonboard(session):
                     continue
 
                 href = ensure_absolute_url(href, "https://www.getonbrd.com")
+
+                # Reject onsite/hybrid indicators in the URL or card text
+                card_text = card.get_text(strip=True).lower()
+                if any(kw in card_text for kw in ["presencial", "híbrido", "hibrido", "in-office", "on-site"]):
+                    if not any(ba in card_text for ba in ["buenos aires", "argentina", "caba"]):
+                        continue
+
                 title_el = card.select_one("h2, h3, strong, [class*=title], span[class*=title]")
                 title = title_el.get_text(strip=True) if title_el else card.get_text(strip=True)[:120]
                 comp_el = card.select_one("[class*=company], .employer, span[class*=company]")
@@ -1252,8 +1310,6 @@ def scrape_getonboard(session):
                 j = make_job(title, company, "LATAM / Remote", href, card.get_text(strip=True), "GetOnBoard", posted_date=posted)
                 if j:
                     jobs.append(j)
-            except Exception:
-                continue
             except Exception:
                 continue
 
@@ -2002,6 +2058,7 @@ def filter_and_score(jobs):
             job["title"], job["company"],
             job["description"], job["location"],
             job.get("salary", ""),
+            job.get("source", ""),
         )
 
         if verbose and score >= 0:
@@ -2043,8 +2100,8 @@ def build_email_html(jobs):
     jobs_html = ""
     for i, job in enumerate(jobs, 1):
         score = job.get("score", 0)
-        if score >= 70: sc, sl, ring = "#10b981", "Excellent", 70
-        elif score >= 50: sc, sl, ring = "#f59e0b", "Good", 50
+        if score >= 65: sc, sl, ring = "#10b981", "Excellent", 70
+        elif score >= 45: sc, sl, ring = "#f59e0b", "Good", 50
         else: sc, sl, ring = "#6b7280", "Fair", 30
 
         # SVG ring
@@ -2285,7 +2342,7 @@ h1,h2,h3{{font-family:'Manrope',system-ui,sans-serif}}
 
   <footer class="ftr">
     <p><strong>Eugenio García de la Torre</strong> · Job Search Agent v2</p>
-    <p>20 sources · Remote only · $40K+ · Argentina-eligible · 72h recency</p>
+    <p>20 sources · Web3 only · Remote only · $40K+ · Argentina-eligible · 72h recency</p>
     <p>Next update: {(datetime.now() + timedelta(days=1)).strftime('%A, %B %d · 8:00 AM ART')}</p>
   </footer>
 
