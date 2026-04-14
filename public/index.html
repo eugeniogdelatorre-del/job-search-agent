@@ -97,7 +97,7 @@ h1,h2,h3{font-family:'Manrope',system-ui,sans-serif}
 .card-right{flex-shrink:0}
 .ring{width:48px;height:48px}
 
-.card-action{margin-top:14px;display:flex;justify-content:flex-end}
+.card-action{margin-top:14px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .btn{
   font-size:13px;padding:8px 22px;border-radius:8px;
   background:rgba(99,102,241,0.12);color:var(--acc);
@@ -106,6 +106,11 @@ h1,h2,h3{font-family:'Manrope',system-ui,sans-serif}
   transition:all .2s;
 }
 .btn:hover{background:var(--acc);color:#fff;border-color:var(--acc)}
+.btn-sec{
+  background:transparent;color:var(--t3);
+  border:1px solid var(--b);
+}
+.btn-sec:hover{background:var(--s2);color:var(--t1);border-color:var(--b2)}
 
 /* ── Empty ── */
 .empty{text-align:center;padding:64px 20px;color:var(--t3)}
@@ -146,17 +151,17 @@ h1,h2,h3{font-family:'Manrope',system-ui,sans-serif}
   <header class="hdr">
     <div class="hdr-eye">Job Search Agent</div>
     <h1>Daily Digest</h1>
-    <p class="hdr-date">Tuesday, April 14, 2026 · 01:11 PM · Last 72 hours</p>
+    <p class="hdr-date">Tuesday, April 14, 2026 · 01:52 PM · Last 72 hours</p>
     <div class="stats">
-      <div><div class="stat-n">15</div><div class="stat-l">Matches</div></div>
-      <div><div class="stat-n">8</div><div class="stat-l">Sources</div></div>
-      <div><div class="stat-n">45</div><div class="stat-l">Top Score</div></div>
+      <div><div class="stat-n">10</div><div class="stat-l">Matches</div></div>
+      <div><div class="stat-n">5</div><div class="stat-l">Sources</div></div>
+      <div><div class="stat-n">75</div><div class="stat-l">Top Score</div></div>
     </div>
   </header>
 
   <div class="filters">
     <span class="filters-label">Filter</span>
-    <button class="filter-btn" data-source="Telegram @cryptojobslist" onclick="toggleSource(this)">Telegram @cryptojobslist <span class="cnt">6</span></button><button class="filter-btn" data-source="CryptoJobs.com" onclick="toggleSource(this)">CryptoJobs.com <span class="cnt">2</span></button><button class="filter-btn" data-source="MyWeb3Jobs" onclick="toggleSource(this)">MyWeb3Jobs <span class="cnt">2</span></button><button class="filter-btn" data-source="Telegram @talentatweb3" onclick="toggleSource(this)">Telegram @talentatweb3 <span class="cnt">1</span></button><button class="filter-btn" data-source="Telegram @illuminatiJOBS" onclick="toggleSource(this)">Telegram @illuminatiJOBS <span class="cnt">1</span></button><button class="filter-btn" data-source="Telegram @jobstash" onclick="toggleSource(this)">Telegram @jobstash <span class="cnt">1</span></button><button class="filter-btn" data-source="Telegram @web3hiring" onclick="toggleSource(this)">Telegram @web3hiring <span class="cnt">1</span></button><button class="filter-btn" data-source="Telegram @DeJob_Global" onclick="toggleSource(this)">Telegram @DeJob_Global <span class="cnt">1</span></button>
+    <button class="filter-btn" data-source="GetOnBoard" onclick="toggleSource(this)">GetOnBoard <span class="cnt">3</span></button><button class="filter-btn" data-source="Telegram @talentatweb3" onclick="toggleSource(this)">Telegram @talentatweb3 <span class="cnt">2</span></button><button class="filter-btn" data-source="CryptoJobs.com" onclick="toggleSource(this)">CryptoJobs.com <span class="cnt">2</span></button><button class="filter-btn" data-source="LinkedIn" onclick="toggleSource(this)">LinkedIn <span class="cnt">2</span></button><button class="filter-btn" data-source="Telegram @cryptojobslist" onclick="toggleSource(this)">Telegram @cryptojobslist <span class="cnt">1</span></button>
     <div class="score-filter">
       <label>Min score</label>
       <input type="range" min="0" max="100" value="0" id="scoreSlider" oninput="filterCards()">
@@ -166,7 +171,210 @@ h1,h2,h3{font-family:'Manrope',system-ui,sans-serif}
 
   <section id="jobList">
     
-      <article class="card" data-score="45" data-source="Telegram @cryptojobslist">
+      <article class="card" data-score="75" data-source="GetOnBoard">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://www.getonbrd.com/jobs/marketing-digital/amazon-category-growth-manager-hadley-designs-remote" target="_blank" rel="noopener">Amazon Category Growth Manager</a></h3>
+            <div class="meta">
+              <span>Unknown</span>
+              <span class="dot"></span>
+              <span>LATAM / Remote</span>
+              <span class="dot"></span>
+              <span class="src">GetOnBoard</span>
+            </div>
+            <p class="desc">Amazon Category Growth ManagerFull timeHadley DesignsRemoteabr 09</p>
+            <div class="badges"><span class="badge b-latam">LATAM</span></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#10b981" stroke-width="3"
+                stroke-dasharray="84.8 28.3" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#10b981" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">75</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://www.getonbrd.com/jobs/marketing-digital/amazon-category-growth-manager-hadley-designs-remote" target="_blank" rel="noopener" class="btn">View Role</a>
+        </div>
+      </article>
+      <article class="card" data-score="75" data-source="GetOnBoard">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://www.getonbrd.com/jobs/marketing-digital/growth-lead-patrimore-remote" target="_blank" rel="noopener">Growth Lead</a></h3>
+            <div class="meta">
+              <span>Unknown</span>
+              <span class="dot"></span>
+              <span>LATAM / Remote</span>
+              <span class="dot"></span>
+              <span class="src">GetOnBoard</span>
+            </div>
+            <p class="desc">Growth LeadFull timePatrimoreRemote (Chile)1200 - 1500 USD/mesabr 08</p>
+            <div class="badges"><span class="badge b-latam">LATAM</span></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#10b981" stroke-width="3"
+                stroke-dasharray="84.8 28.3" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#10b981" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">75</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://www.getonbrd.com/jobs/marketing-digital/growth-lead-patrimore-remote" target="_blank" rel="noopener" class="btn">View Role</a>
+        </div>
+      </article>
+      <article class="card" data-score="65" data-source="Telegram @talentatweb3">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://www.talentweb3.co/job/f7eb9c2a" target="_blank" rel="noopener">Hiring: Growth Lead at Jitohttps://www.talentweb3.co/job/f7eb9c2a—𝘊𝘶𝘳𝘢𝘵𝘦𝘥 𝘣𝘺 𝘛𝘢𝘭𝘦𝘯𝘵@𝘊𝘩𝘦𝘤𝘬 𝘰𝘶𝘵 𝘰𝘶𝘳 𝘰𝘵𝘩𝘦𝘳 𝘤𝘩𝘢𝘯𝘯𝘦𝘭𝘴:@talen</a></h3>
+            <div class="meta">
+              <span>talentatweb3</span>
+              <span class="dot"></span>
+              <span>Remote</span>
+              <span class="dot"></span>
+              <span class="src">Telegram @talentatweb3</span>
+            </div>
+            <p class="desc">🦄Hiring: Growth Lead at Jitohttps://www.talentweb3.co/job/f7eb9c2a—𝘊𝘶𝘳𝘢𝘵𝘦𝘥 𝘣𝘺 𝘛𝘢𝘭𝘦𝘯𝘵@𝘊𝘩𝘦𝘤𝘬 𝘰𝘶𝘵 𝘰𝘶𝘳 𝘰𝘵𝘩𝘦𝘳 𝘤𝘩𝘢𝘯𝘯𝘦𝘭𝘴:@talentatai|@talentatrobotics𝘏𝘪𝘳𝘪𝘯𝘨 𝘴𝘶𝘱𝘱𝘰𝘳𝘵:@kerffffc</p>
+            <div class="badges"><span class="badge b-web3">Web3</span></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#10b981" stroke-width="3"
+                stroke-dasharray="73.5 39.6" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#10b981" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">65</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://www.talentweb3.co/job/f7eb9c2a" target="_blank" rel="noopener" class="btn">Apply Now</a><a href="https://t.me/talentatweb3/1506" target="_blank" rel="noopener" class="btn btn-sec">View on Telegram</a>
+        </div>
+      </article>
+      <article class="card" data-score="60" data-source="CryptoJobs.com">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://www.cryptojobs.com/job/community-manager-12111" target="_blank" rel="noopener">Community Manager</a></h3>
+            <div class="meta">
+              <span>Unknown</span>
+              <span class="dot"></span>
+              <span>Remote</span>
+              <span class="dot"></span>
+              <span class="src">CryptoJobs.com</span>
+            </div>
+            <p class="desc">Community Manager</p>
+            <div class="badges"></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
+                stroke-dasharray="67.9 45.2" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">60</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://www.cryptojobs.com/job/community-manager-12111" target="_blank" rel="noopener" class="btn">View Role</a>
+        </div>
+      </article>
+      <article class="card" data-score="60" data-source="CryptoJobs.com">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://www.cryptojobs.com/job/kol-manager-12112" target="_blank" rel="noopener">KOL Manager</a></h3>
+            <div class="meta">
+              <span>Unknown</span>
+              <span class="dot"></span>
+              <span>Remote</span>
+              <span class="dot"></span>
+              <span class="src">CryptoJobs.com</span>
+            </div>
+            <p class="desc">KOL Manager</p>
+            <div class="badges"></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
+                stroke-dasharray="67.9 45.2" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">60</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://www.cryptojobs.com/job/kol-manager-12112" target="_blank" rel="noopener" class="btn">View Role</a>
+        </div>
+      </article>
+      <article class="card" data-score="60" data-source="LinkedIn">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://www.linkedin.com/jobs/view/senior-growth-manager-performance-marketing-at-okx-4389396981" target="_blank" rel="noopener">Senior Growth Manager, Performance Marketing</a></h3>
+            <div class="meta">
+              <span>OKX</span>
+              <span class="dot"></span>
+              <span>Latin America</span>
+              <span class="dot"></span>
+              <span class="src">LinkedIn</span>
+            </div>
+            <p class="desc">Senior Growth Manager, Performance MarketingSenior Growth Manager, Performance MarketingOKXLatin AmericaActively Hiring2 hours ago</p>
+            <div class="badges"><span class="badge b-latam">LATAM</span></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
+                stroke-dasharray="67.9 45.2" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">60</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://www.linkedin.com/jobs/view/senior-growth-manager-performance-marketing-at-okx-4389396981" target="_blank" rel="noopener" class="btn">View Role</a>
+        </div>
+      </article>
+      <article class="card" data-score="55" data-source="GetOnBoard">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://www.getonbrd.com/jobs/advertising-media/twitter-x-content-strategist-legalatoms-remote" target="_blank" rel="noopener">Twitter/X Content Strategist</a></h3>
+            <div class="meta">
+              <span>Unknown</span>
+              <span class="dot"></span>
+              <span>LATAM / Remote</span>
+              <span class="dot"></span>
+              <span class="src">GetOnBoard</span>
+            </div>
+            <p class="desc">Twitter/X Content StrategistFreelanceLegalAtomsRemote (Argentina)Jan 27</p>
+            <div class="badges"><span class="badge b-latam">LATAM</span></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
+                stroke-dasharray="62.2 50.9" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">55</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://www.getonbrd.com/jobs/advertising-media/twitter-x-content-strategist-legalatoms-remote" target="_blank" rel="noopener" class="btn">View Role</a>
+        </div>
+      </article>
+      <article class="card" data-score="55" data-source="Telegram @cryptojobslist">
         <div class="card-main">
           <div class="card-left">
             <h3><a href="https://cjl.ist/8v5ugihaz" target="_blank" rel="noopener">BD Manager (Remote)🏛️at Neovate Pte. Ltd.🌍Remote🕑Applications close in 9 days✅Apply →https://cjl.ist/8v5ugihazOr forwar</a></h3>
@@ -184,21 +392,21 @@ h1,h2,h3{font-family:'Manrope',system-ui,sans-serif}
             <svg class="ring" viewBox="0 0 44 44">
               <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
               <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
-                stroke-dasharray="50.9 62.2" stroke-linecap="round"
+                stroke-dasharray="62.2 50.9" stroke-linecap="round"
                 transform="rotate(-90 22 22)"/>
               <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">45</text>
+                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">55</text>
             </svg>
           </div>
         </div>
         <div class="card-action">
-          <a href="https://cjl.ist/8v5ugihaz" target="_blank" rel="noopener" class="btn">View Role</a>
+          <a href="https://cjl.ist/8v5ugihaz" target="_blank" rel="noopener" class="btn">Apply Now</a><a href="https://t.me/cryptojobslist/10836" target="_blank" rel="noopener" class="btn btn-sec">View on Telegram</a>
         </div>
       </article>
-      <article class="card" data-score="45" data-source="Telegram @talentatweb3">
+      <article class="card" data-score="55" data-source="Telegram @talentatweb3">
         <div class="card-main">
           <div class="card-left">
-            <h3><a href="https://www.talentweb3.co/job/f7eb9c2a" target="_blank" rel="noopener">Hiring: Growth Lead at Jitohttps://www.talentweb3.co/job/f7eb9c2a—𝘊𝘶𝘳𝘢𝘵𝘦𝘥 𝘣𝘺 𝘛𝘢𝘭𝘦𝘯𝘵@𝘊𝘩𝘦𝘤𝘬 𝘰𝘶𝘵 𝘰𝘶𝘳 𝘰𝘵𝘩𝘦𝘳 𝘤𝘩𝘢𝘯𝘯𝘦𝘭𝘴:@talen</a></h3>
+            <h3><a href="https://www.talentweb3.co/job/6c0df992" target="_blank" rel="noopener">Hiring: Marketing Lead at Ergonia↳ Crypto-native DeFi trading firm and venture studio backed by DRW and...</a></h3>
             <div class="meta">
               <span>talentatweb3</span>
               <span class="dot"></span>
@@ -206,399 +414,51 @@ h1,h2,h3{font-family:'Manrope',system-ui,sans-serif}
               <span class="dot"></span>
               <span class="src">Telegram @talentatweb3</span>
             </div>
-            <p class="desc">🦄Hiring: Growth Lead at Jitohttps://www.talentweb3.co/job/f7eb9c2a—𝘊𝘶𝘳𝘢𝘵𝘦𝘥 𝘣𝘺 𝘛𝘢𝘭𝘦𝘯𝘵@𝘊𝘩𝘦𝘤𝘬 𝘰𝘶𝘵 𝘰𝘶𝘳 𝘰𝘵𝘩𝘦𝘳 𝘤𝘩𝘢𝘯𝘯𝘦𝘭𝘴:@talentatai|@talentatrobotics𝘏𝘪𝘳𝘪𝘯𝘨 𝘴𝘶𝘱𝘱𝘰𝘳𝘵:@kerffffc</p>
+            <p class="desc">🦄Hiring: Marketing Lead at Ergonia↳ Crypto-native DeFi trading firm and venture studio backed by DRW and... · Growthhttps://www.talentweb3.co/job/6c0df992—𝘊𝘶𝘳𝘢𝘵𝘦𝘥 𝘣𝘺 𝘛𝘢𝘭𝘦𝘯𝘵@𝘊𝘩𝘦𝘤𝘬 𝘰𝘶𝘵 𝘰𝘶𝘳 𝘰𝘵𝘩𝘦𝘳 𝘤𝘩𝘢𝘯𝘯𝘦𝘭</p>
             <div class="badges"><span class="badge b-web3">Web3</span></div>
           </div>
           <div class="card-right">
             <svg class="ring" viewBox="0 0 44 44">
               <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
               <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
-                stroke-dasharray="50.9 62.2" stroke-linecap="round"
+                stroke-dasharray="62.2 50.9" stroke-linecap="round"
                 transform="rotate(-90 22 22)"/>
               <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">45</text>
+                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">55</text>
             </svg>
           </div>
         </div>
         <div class="card-action">
-          <a href="https://www.talentweb3.co/job/f7eb9c2a" target="_blank" rel="noopener" class="btn">View Role</a>
+          <a href="https://www.talentweb3.co/job/6c0df992" target="_blank" rel="noopener" class="btn">Apply Now</a><a href="https://t.me/talentatweb3/1504" target="_blank" rel="noopener" class="btn btn-sec">View on Telegram</a>
         </div>
       </article>
-      <article class="card" data-score="40" data-source="CryptoJobs.com">
+      <article class="card" data-score="50" data-source="LinkedIn">
         <div class="card-main">
           <div class="card-left">
-            <h3><a href="https://www.cryptojobs.com/job/community-manager-12111" target="_blank" rel="noopener">Community Manager</a></h3>
+            <h3><a href="https://lr.linkedin.com/jobs/view/bitmart-card-%3F-growth-manager-at-bitmart-4399648411" target="_blank" rel="noopener">BitMart Card ? Growth Manager</a></h3>
             <div class="meta">
-              <span>Unknown</span>
+              <span>BitMart</span>
               <span class="dot"></span>
-              <span>Remote</span>
+              <span>Worldwide Mission, Grand Bassa County, Liberia</span>
               <span class="dot"></span>
-              <span class="src">CryptoJobs.com</span>
+              <span class="src">LinkedIn</span>
             </div>
-            <p class="desc">Community Manager</p>
+            <p class="desc">BitMart Card ? Growth ManagerBitMart Card ? Growth ManagerBitMartWorldwide Mission, Grand Bassa County, LiberiaBe an early applicant22 hours ago</p>
             <div class="badges"></div>
           </div>
           <div class="card-right">
             <svg class="ring" viewBox="0 0 44 44">
               <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="45.2 67.9" stroke-linecap="round"
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
+                stroke-dasharray="56.5 56.5" stroke-linecap="round"
                 transform="rotate(-90 22 22)"/>
               <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">40</text>
+                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">50</text>
             </svg>
           </div>
         </div>
         <div class="card-action">
-          <a href="https://www.cryptojobs.com/job/community-manager-12111" target="_blank" rel="noopener" class="btn">View Role</a>
-        </div>
-      </article>
-      <article class="card" data-score="40" data-source="CryptoJobs.com">
-        <div class="card-main">
-          <div class="card-left">
-            <h3><a href="https://www.cryptojobs.com/job/kol-manager-12112" target="_blank" rel="noopener">KOL Manager</a></h3>
-            <div class="meta">
-              <span>Unknown</span>
-              <span class="dot"></span>
-              <span>Remote</span>
-              <span class="dot"></span>
-              <span class="src">CryptoJobs.com</span>
-            </div>
-            <p class="desc">KOL Manager</p>
-            <div class="badges"></div>
-          </div>
-          <div class="card-right">
-            <svg class="ring" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="45.2 67.9" stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">40</text>
-            </svg>
-          </div>
-        </div>
-        <div class="card-action">
-          <a href="https://www.cryptojobs.com/job/kol-manager-12112" target="_blank" rel="noopener" class="btn">View Role</a>
-        </div>
-      </article>
-      <article class="card" data-score="40" data-source="Telegram @cryptojobslist">
-        <div class="card-main">
-          <div class="card-left">
-            <h3><a href="http://OmniRisk.io/" target="_blank" rel="noopener">Crypto SEO Content Writer (DeFi AI Onchain Risk)🏛️atOmniRisk.io🌍Remote💰$15-25/hour🕑Applications close in 16 days✅</a></h3>
-            <div class="meta">
-              <span>cryptojobslist</span>
-              <span class="dot"></span>
-              <span>Remote</span>
-              <span class="dot"></span>
-              <span class="src">Telegram @cryptojobslist</span>
-            </div>
-            <p class="desc">💼Crypto SEO Content Writer (DeFi AI Onchain Risk)🏛️atOmniRisk.io🌍Remote💰$15-25/hour🕑Applications close in 16 days✅Apply →https://cjl.ist/m0otwi6q8Or forward to a friend!</p>
-            <div class="badges"><span class="badge b-web3">Web3</span></div>
-          </div>
-          <div class="card-right">
-            <svg class="ring" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="45.2 67.9" stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">40</text>
-            </svg>
-          </div>
-        </div>
-        <div class="card-action">
-          <a href="http://OmniRisk.io/" target="_blank" rel="noopener" class="btn">View Role</a>
-        </div>
-      </article>
-      <article class="card" data-score="35" data-source="Telegram @illuminatiJOBS">
-        <div class="card-main">
-          <div class="card-left">
-            <h3><a href="http://golfiuns.biz/" target="_blank" rel="noopener">Seeking or Hiring:✅Hiring✅Website:golfiuns.bizTwitter:@golfiuns1 Line Description of the Firm (in bullets):Tokenizes phy</a></h3>
-            <div class="meta">
-              <span>illuminatiJOBS</span>
-              <span class="dot"></span>
-              <span>Remote</span>
-              <span class="dot"></span>
-              <span class="src">Telegram @illuminatiJOBS</span>
-            </div>
-            <p class="desc">Seeking or Hiring:✅Hiring✅Website:golfiuns.bizTwitter:@golfiuns1 Line Description of the Firm (in bullets):Tokenizes physical assets into blockchain-based digital vouchers.Golfiuns connects physical g</p>
-            <div class="badges"><span class="badge b-web3">Web3</span></div>
-          </div>
-          <div class="card-right">
-            <svg class="ring" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="39.6 73.5" stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">35</text>
-            </svg>
-          </div>
-        </div>
-        <div class="card-action">
-          <a href="http://golfiuns.biz/" target="_blank" rel="noopener" class="btn">View Role</a>
-        </div>
-      </article>
-      <article class="card" data-score="35" data-source="Telegram @cryptojobslist">
-        <div class="card-main">
-          <div class="card-left">
-            <h3><a href="https://cjl.ist/pjv83wnsr" target="_blank" rel="noopener">Lead Analyst - KRED🏛️at Kerneldao🌍Remote💰$52k-55k/year🕑Applications close in 9 days✅Apply →https://cjl.ist/pjv83wnsrOr</a></h3>
-            <div class="meta">
-              <span>cryptojobslist</span>
-              <span class="dot"></span>
-              <span>Remote</span>
-              <span class="dot"></span>
-              <span class="src">Telegram @cryptojobslist</span>
-            </div>
-            <p class="desc">💼Lead Analyst - KRED🏛️at Kerneldao🌍Remote💰$52k-55k/year🕑Applications close in 9 days✅Apply →https://cjl.ist/pjv83wnsrOr forward to a friend!</p>
-            <div class="badges"><span class="badge b-web3">Web3</span></div>
-          </div>
-          <div class="card-right">
-            <svg class="ring" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="39.6 73.5" stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">35</text>
-            </svg>
-          </div>
-        </div>
-        <div class="card-action">
-          <a href="https://cjl.ist/pjv83wnsr" target="_blank" rel="noopener" class="btn">View Role</a>
-        </div>
-      </article>
-      <article class="card" data-score="35" data-source="Telegram @jobstash">
-        <div class="card-main">
-          <div class="card-left">
-            <h3><a href="https://jobstash.xyz/o-datawallet" target="_blank" rel="noopener">Datawalletis hiring a remoteSenior Crypto Research WriterDatawallet is looking for a Senior Crypto Research Writer to pr</a></h3>
-            <div class="meta">
-              <span>jobstash</span>
-              <span class="dot"></span>
-              <span>Remote</span>
-              <span class="dot"></span>
-              <span class="src">Telegram @jobstash</span>
-            </div>
-            <p class="desc">Datawalletis hiring a remoteSenior Crypto Research WriterDatawallet is looking for a Senior Crypto Research Writer to produce in-depth market analysis and protocol deep dives and write educational gui</p>
-            <div class="badges"><span class="badge b-web3">Web3</span></div>
-          </div>
-          <div class="card-right">
-            <svg class="ring" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="39.6 73.5" stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">35</text>
-            </svg>
-          </div>
-        </div>
-        <div class="card-action">
-          <a href="https://jobstash.xyz/o-datawallet" target="_blank" rel="noopener" class="btn">View Role</a>
-        </div>
-      </article>
-      <article class="card" data-score="30" data-source="MyWeb3Jobs">
-        <div class="card-main">
-          <div class="card-left">
-            <h3><a href="https://myweb3jobs.com/job/binance-accelerator-program-operations-web3/" target="_blank" rel="noopener">Binance Accelerator Program – Operations (Web3)</a></h3>
-            <div class="meta">
-              <span>at Binance</span>
-              <span class="dot"></span>
-              <span>Remote</span>
-              <span class="dot"></span>
-              <span class="src">MyWeb3Jobs</span>
-            </div>
-            <p class="desc">Binance Accelerator Program – Operations (Web3)at Binance</p>
-            <div class="badges"><span class="badge b-web3">Web3</span></div>
-          </div>
-          <div class="card-right">
-            <svg class="ring" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="33.9 79.2" stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">30</text>
-            </svg>
-          </div>
-        </div>
-        <div class="card-action">
-          <a href="https://myweb3jobs.com/job/binance-accelerator-program-operations-web3/" target="_blank" rel="noopener" class="btn">View Role</a>
-        </div>
-      </article>
-      <article class="card" data-score="30" data-source="MyWeb3Jobs">
-        <div class="card-main">
-          <div class="card-left">
-            <h3><a href="https://myweb3jobs.com/job/binance-accelerator-program-operations-web3/" target="_blank" rel="noopener">Binance Accelerator Program – Operations (Web3)</a></h3>
-            <div class="meta">
-              <span>Unknown</span>
-              <span class="dot"></span>
-              <span>Remote</span>
-              <span class="dot"></span>
-              <span class="src">MyWeb3Jobs</span>
-            </div>
-            <p class="desc">Binance Accelerator Program – Operations (Web3)</p>
-            <div class="badges"><span class="badge b-web3">Web3</span></div>
-          </div>
-          <div class="card-right">
-            <svg class="ring" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="33.9 79.2" stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">30</text>
-            </svg>
-          </div>
-        </div>
-        <div class="card-action">
-          <a href="https://myweb3jobs.com/job/binance-accelerator-program-operations-web3/" target="_blank" rel="noopener" class="btn">View Role</a>
-        </div>
-      </article>
-      <article class="card" data-score="30" data-source="Telegram @web3hiring">
-        <div class="card-main">
-          <div class="card-left">
-            <h3><a href="https://jobs.ashbyhq.com/Bastion/6ab91273-5c33-42fc-a054-1dfc4096a85a?utm_source=jobs.a16z.com" target="_blank" rel="noopener">Bastion is hiringBusiness Development and Operations Associate</a></h3>
-            <div class="meta">
-              <span>web3hiring</span>
-              <span class="dot"></span>
-              <span>Remote</span>
-              <span class="dot"></span>
-              <span class="src">Telegram @web3hiring</span>
-            </div>
-            <p class="desc">Bastion is hiringBusiness Development and Operations Associate</p>
-            <div class="badges"><span class="badge b-web3">Web3</span></div>
-          </div>
-          <div class="card-right">
-            <svg class="ring" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="33.9 79.2" stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">30</text>
-            </svg>
-          </div>
-        </div>
-        <div class="card-action">
-          <a href="https://jobs.ashbyhq.com/Bastion/6ab91273-5c33-42fc-a054-1dfc4096a85a?utm_source=jobs.a16z.com" target="_blank" rel="noopener" class="btn">View Role</a>
-        </div>
-      </article>
-      <article class="card" data-score="30" data-source="Telegram @cryptojobslist">
-        <div class="card-main">
-          <div class="card-left">
-            <h3><a href="https://cjl.ist/6coygpeuu" target="_blank" rel="noopener">Head of Institutional Partnerships & BD🏛️at BASIS🌍Remote💰$150k-250k/year🕑Applications close in 16 days✅Apply →https://c</a></h3>
-            <div class="meta">
-              <span>cryptojobslist</span>
-              <span class="dot"></span>
-              <span>Remote</span>
-              <span class="dot"></span>
-              <span class="src">Telegram @cryptojobslist</span>
-            </div>
-            <p class="desc">💼Head of Institutional Partnerships & BD🏛️at BASIS🌍Remote💰$150k-250k/year🕑Applications close in 16 days✅Apply →https://cjl.ist/6coygpeuuOr forward to a friend!</p>
-            <div class="badges"><span class="badge b-web3">Web3</span></div>
-          </div>
-          <div class="card-right">
-            <svg class="ring" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="33.9 79.2" stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">30</text>
-            </svg>
-          </div>
-        </div>
-        <div class="card-action">
-          <a href="https://cjl.ist/6coygpeuu" target="_blank" rel="noopener" class="btn">View Role</a>
-        </div>
-      </article>
-      <article class="card" data-score="30" data-source="Telegram @cryptojobslist">
-        <div class="card-main">
-          <div class="card-left">
-            <h3><a href="https://cjl.ist/pupyqk897" target="_blank" rel="noopener">Director, EMEA🏛️at Utila🌍Remote💰EUR 125k-138k/year🕑Applications close in 9 days✅Apply →https://cjl.ist/pupyqk897O</a></h3>
-            <div class="meta">
-              <span>cryptojobslist</span>
-              <span class="dot"></span>
-              <span>Remote</span>
-              <span class="dot"></span>
-              <span class="src">Telegram @cryptojobslist</span>
-            </div>
-            <p class="desc">💼Sales Director, EMEA🏛️at Utila🌍Remote💰EUR 125k-138k/year🕑Applications close in 9 days✅Apply →https://cjl.ist/pupyqk897Or forward to a friend!</p>
-            <div class="badges"><span class="badge b-web3">Web3</span></div>
-          </div>
-          <div class="card-right">
-            <svg class="ring" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="33.9 79.2" stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">30</text>
-            </svg>
-          </div>
-        </div>
-        <div class="card-action">
-          <a href="https://cjl.ist/pupyqk897" target="_blank" rel="noopener" class="btn">View Role</a>
-        </div>
-      </article>
-      <article class="card" data-score="30" data-source="Telegram @cryptojobslist">
-        <div class="card-main">
-          <div class="card-left">
-            <h3><a href="https://cjl.ist/127yzypca" target="_blank" rel="noopener">Wallet Engineer🏛️at SwapRail🌍Remote💰$800-1000/week🕑Applications close in 23 days✅Apply →https://cjl.ist/127yzypcaOr for</a></h3>
-            <div class="meta">
-              <span>cryptojobslist</span>
-              <span class="dot"></span>
-              <span>Remote</span>
-              <span class="dot"></span>
-              <span class="src">Telegram @cryptojobslist</span>
-            </div>
-            <p class="desc">💼Wallet Engineer🏛️at SwapRail🌍Remote💰$800-1000/week🕑Applications close in 23 days✅Apply →https://cjl.ist/127yzypcaOr forward to a friend!</p>
-            <div class="badges"><span class="badge b-web3">Web3</span></div>
-          </div>
-          <div class="card-right">
-            <svg class="ring" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="33.9 79.2" stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">30</text>
-            </svg>
-          </div>
-        </div>
-        <div class="card-action">
-          <a href="https://cjl.ist/127yzypca" target="_blank" rel="noopener" class="btn">View Role</a>
-        </div>
-      </article>
-      <article class="card" data-score="30" data-source="Telegram @DeJob_Global">
-        <div class="card-main">
-          <div class="card-left">
-            <h3><a href="https://www.binance.com/" target="_blank" rel="noopener">#Recruitment🏡Binance#CEX🐇Introduction:https://www.binance.com/The world’s leading blockchain ecosystem and digital asset</a></h3>
-            <div class="meta">
-              <span>DeJob_Global</span>
-              <span class="dot"></span>
-              <span>Remote</span>
-              <span class="dot"></span>
-              <span class="src">Telegram @DeJob_Global</span>
-            </div>
-            <p class="desc">#Recruitment🏡Binance#CEX🐇Introduction:https://www.binance.com/The world’s leading blockchain ecosystem and digital asset exchange.🛵#FullTime#Remote/#Onsite#Asia📚#Senior·Product·Operations·Manager(Bina</p>
-            <div class="badges"><span class="badge b-web3">Web3</span></div>
-          </div>
-          <div class="card-right">
-            <svg class="ring" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#6b7280" stroke-width="3"
-                stroke-dasharray="33.9 79.2" stroke-linecap="round"
-                transform="rotate(-90 22 22)"/>
-              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
-                fill="#6b7280" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">30</text>
-            </svg>
-          </div>
-        </div>
-        <div class="card-action">
-          <a href="https://www.binance.com/" target="_blank" rel="noopener" class="btn">View Role</a>
+          <a href="https://lr.linkedin.com/jobs/view/bitmart-card-%3F-growth-manager-at-bitmart-4399648411" target="_blank" rel="noopener" class="btn">View Role</a>
         </div>
       </article>
   </section>
