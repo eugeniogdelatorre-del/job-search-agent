@@ -266,14 +266,14 @@ def save_cache(cache):
 
 
 def is_within_24h(date_str):
-    """Check if a date string represents a time within the last 24 hours."""
+    """Check if a date string is within the recency window. Unknown dates are EXCLUDED."""
     if not date_str:
-        return True  # If no date info, include it (benefit of the doubt)
+        return False  # No date = don't include — prevents stale jobs without dates
 
     now = datetime.now(timezone.utc)
     cutoff = now - timedelta(hours=RECENCY_HOURS)
 
-    # Try common date formats
+    # ── Standard ISO / English formats ────────────────────────────────────────
     for fmt in [
         "%Y-%m-%dT%H:%M:%S.%fZ",
         "%Y-%m-%dT%H:%M:%SZ",
@@ -281,11 +281,12 @@ def is_within_24h(date_str):
         "%Y-%m-%dT%H:%M:%S",
         "%Y-%m-%d %H:%M:%S",
         "%Y-%m-%d",
-        "%b %d, %Y",
-        "%B %d, %Y",
-        "%d %b %Y",
-        "%d %B %Y",
+        "%b %d, %Y",       # Mar 22, 2026
+        "%B %d, %Y",       # March 22, 2026
+        "%d %b %Y",        # 22 Mar 2026
+        "%d %B %Y",        # 22 March 2026
         "%m/%d/%Y",
+        "%d/%m/%Y",
     ]:
         try:
             dt = datetime.strptime(date_str.strip(), fmt)
@@ -295,41 +296,91 @@ def is_within_24h(date_str):
         except ValueError:
             continue
 
-    # Relative time patterns: "2 hours ago", "1 day ago", "just now", "today"
     text = date_str.lower().strip()
-    if text in ("just now", "just posted", "now", "today", "new"):
-        return True
-    if "minute" in text or "hour" in text or "second" in text:
-        return True
-    if "1 day ago" in text or "1d ago" in text:
-        return True
-    if "yesterday" in text:
-        return True
-    if any(w in text for w in ["2 day", "3 day", "4 day", "5 day", "6 day", "week", "month", "year"]):
-        return False
 
-    # Reject any mention of old years (2025 or earlier)
-    year_match = re.search(r'\b(20[0-2][0-9])\b', text)
-    if year_match:
-        year = int(year_match.group(1))
-        if year <= 2025:
+    # ── Relative time: always recent ─────────────────────────────────────────
+    if text in ("just now", "just posted", "now", "today", "new", "newly posted"):
+        return True
+    if any(w in text for w in ["minute", "hour", "second", "moments ago"]):
+        return True
+    if "1 day ago" in text or "1d ago" in text or "yesterday" in text:
+        return True
+
+    # ── Relative time: too old ────────────────────────────────────────────────
+    if any(w in text for w in ["2 day", "3 day", "4 day", "5 day", "6 day",
+                                "week", "month", "year", "ago"]):
+        # "1 day ago" already caught above; anything else with "ago" is old
+        if "ago" in text and "1 day" not in text and "1d" not in text:
+            return False
+        if any(w in text for w in ["2 day", "3 day", "4 day", "5 day", "6 day",
+                                    "week", "month", "year"]):
             return False
 
-    # Reject date patterns like "Jan 16", "Apr 09" — calculate actual day difference
-    month_match = re.search(r'\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})\b', text)
+    # ── Spanish month abbreviations: abr, ene, feb, mar, may, jun, jul, ago, sep, oct, nov, dic ──
+    SPANISH_MONTHS = {
+        "ene": 1, "feb": 2, "mar": 3, "abr": 4, "may": 5, "jun": 6,
+        "jul": 7, "ago": 8, "sep": 9, "oct": 10, "nov": 11, "dic": 12,
+    }
+    # Match patterns like "abr 08", "abr. 08", "08 abr", "08 de abr"
+    sp_match = re.search(
+        r'(?:(\d{1,2})\s*(?:de\s*)?)?(' + '|'.join(SPANISH_MONTHS.keys()) + r')\.?\s*(?:de\s*)?(\d{1,2})?(?:\s*(?:de\s*)?(\d{4}))?',
+        text
+    )
+    if sp_match:
+        try:
+            month_str = sp_match.group(2)
+            month_num = SPANISH_MONTHS.get(month_str)
+            if not month_num:
+                pass
+            else:
+                day = int(sp_match.group(1) or sp_match.group(3) or 1)
+                year = int(sp_match.group(4)) if sp_match.group(4) else datetime.now().year
+                dt = datetime(year, month_num, day, tzinfo=timezone.utc)
+                return dt >= cutoff
+        except (ValueError, TypeError):
+            pass
+
+    # ── Spanish long form: "08 de abril de 2026", "27 de enero de 2026" ──────
+    SPANISH_MONTHS_LONG = {
+        "enero": 1, "febrero": 2, "marzo": 3, "abril": 4, "mayo": 5,
+        "junio": 6, "julio": 7, "agosto": 8, "septiembre": 9,
+        "octubre": 10, "noviembre": 11, "diciembre": 12,
+    }
+    sp_long = re.search(
+        r'(\d{1,2})\s+de\s+(' + '|'.join(SPANISH_MONTHS_LONG.keys()) + r')\s+de\s+(\d{4})',
+        text
+    )
+    if sp_long:
+        try:
+            day = int(sp_long.group(1))
+            month_num = SPANISH_MONTHS_LONG[sp_long.group(2)]
+            year = int(sp_long.group(3))
+            dt = datetime(year, month_num, day, tzinfo=timezone.utc)
+            return dt >= cutoff
+        except (ValueError, TypeError):
+            pass
+
+    # ── English "Mon DD" without year: "Jan 27", "Apr 08" ────────────────────
+    month_match = re.search(
+        r'\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})\b',
+        text
+    )
     if month_match:
         try:
-            month_abbr = month_match.group(1).capitalize()
+            mn = month_match.group(1).capitalize()
             day = int(month_match.group(2))
-            current_year = datetime.now().year
-            dt = datetime.strptime(f"{month_abbr} {day} {current_year}", "%b %d %Y")
+            year = datetime.now().year
+            dt = datetime.strptime(f"{mn} {day} {year}", "%b %d %Y")
             dt = dt.replace(tzinfo=timezone.utc)
+            # If the date is in the future (e.g. Dec in January), subtract a year
+            if dt > now:
+                dt = dt.replace(year=year - 1)
             return dt >= cutoff
         except ValueError:
             pass
 
-    # Unknown format → include (don't want to miss jobs)
-    return True
+    # ── Unknown format → EXCLUDE (don't include stale jobs we can't date) ────
+    return False
 
 
 def ensure_absolute_url(url, base):
