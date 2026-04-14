@@ -14,7 +14,7 @@ env:
 jobs:
   search:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -25,6 +25,9 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      - name: Clear job cache (re-score all jobs fresh)
+        run: rm -f jobs_cache.json
 
       - name: Run Job Search Agent
         env:

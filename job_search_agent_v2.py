@@ -687,7 +687,11 @@ def score_job(title, company, description, location, salary_text="", source=""):
 def scrape_cryptojobslist(session):
     """cryptojobslist.com — filter by recent"""
     jobs = []
-    terms = ["community", "growth", "marketing", "kol", "operations", "ecosystem"]
+    terms = [
+        "community", "growth", "marketing", "kol", "operations",
+        "ecosystem", "ambassador", "influencer", "social media",
+        "bd", "partnerships", "content", "brand",
+    ]
 
     for term in terms:
         url = f"https://cryptojobslist.com/search?q={quote_plus(term)}&sort=recent"
@@ -735,7 +739,9 @@ def scrape_web3career(session):
     jobs = []
     paths = [
         "/community-jobs", "/growth-jobs", "/marketing-jobs",
-        "/non-tech-jobs", "/operations-jobs",
+        "/non-tech-jobs", "/operations-jobs", "/remote-crypto-jobs",
+        "/ambassador-jobs", "/social-media-jobs", "/content-jobs",
+        "/business-development-jobs", "/partnerships-jobs",
     ]
 
     for path in paths:
@@ -1725,17 +1731,26 @@ def scrape_linkedin_guest_api(session):
     searches = [
         ("community manager web3 crypto", "Remote"),
         ("community manager blockchain", "Remote"),
+        ("community lead crypto", "Remote"),
         ("growth lead crypto", "Remote"),
         ("growth manager web3", "Remote"),
+        ("head of growth crypto", "Remote"),
         ("kol manager crypto", "Remote"),
+        ("kol lead web3", "Remote"),
         ("marketing manager web3 crypto", "Remote"),
         ("head of community crypto", "Remote"),
         ("community lead blockchain", "Remote"),
         ("ecosystem lead crypto", "Remote"),
         ("ambassador program crypto", "Remote"),
         ("influencer marketing crypto", "Remote"),
+        ("influencer relations web3", "Remote"),
+        ("social media manager web3", "Remote"),
+        ("partnerships manager crypto", "Remote"),
+        ("bd manager crypto", "Remote"),
         ("community manager crypto", "Latin America"),
         ("growth lead web3", "Latin America"),
+        ("community manager blockchain defi", "Remote"),
+        ("web3 community growth", "Remote"),
     ]
 
     for keywords, location in searches:
@@ -1875,8 +1890,11 @@ def scrape_ddg_linkedin(session):
     jobs = []
     queries = [
         'site:linkedin.com/jobs "community manager" OR "growth lead" web3 crypto remote',
-        'site:linkedin.com/jobs "kol manager" OR "marketing manager" crypto web3',
+        'site:linkedin.com/jobs "kol manager" OR "kol lead" crypto web3 remote',
         'site:linkedin.com/jobs "head of community" OR "ecosystem lead" crypto blockchain',
+        'site:linkedin.com/jobs "influencer marketing" OR "ambassador" crypto web3 remote',
+        'site:linkedin.com/jobs "community lead" OR "growth manager" blockchain defi remote',
+        'site:linkedin.com/jobs "social media manager" OR "partnerships manager" web3 crypto',
     ]
     for q in queries:
         results = _scrape_duckduckgo(session, q, "LinkedIn (via DDG)")
@@ -1906,6 +1924,10 @@ def scrape_ddg_general(session):
         '"community manager" OR "kol manager" web3 crypto remote hiring 2026',
         '"growth lead" OR "head of community" crypto web3 remote hiring',
         '"community lead" OR "marketing manager" blockchain remote hiring',
+        '"influencer marketing manager" OR "influencer relations" web3 crypto remote',
+        '"ecosystem lead" OR "ambassador program" crypto blockchain remote 2026',
+        '"community director" OR "head of growth" crypto web3 remote',
+        '"kol lead" OR "social media lead" crypto blockchain remote hiring',
     ]
     for q in queries:
         results = _scrape_duckduckgo(session, q, "DuckDuckGo")
@@ -2424,7 +2446,7 @@ h1,h2,h3{{font-family:'Manrope',system-ui,sans-serif}}
 
   <footer class="ftr">
     <p><strong>Eugenio García de la Torre</strong> · Job Search Agent v2</p>
-    <p>20 sources · Web3 only · Remote only · $40K+ · Argentina-eligible · 72h recency</p>
+    <p>20 sources · Web3 only · Remote only · $30K+ · Argentina-eligible · 72h recency</p>
     <p>Next update: {(datetime.now() + timedelta(days=1)).strftime('%A, %B %d · 8:00 AM ART')}</p>
   </footer>
 
