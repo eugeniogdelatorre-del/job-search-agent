@@ -571,21 +571,38 @@ def score_job(title, company, description, location, salary_text="", source=""):
             if low_hourly * 40 * 52 < SALARY_FLOOR:
                 return -1, [f"Hourly rate too low: ${low_hourly}/hr"]
 
-    # Scan description for explicit monthly salary below floor
-    monthly_match = re.search(
-        r'(\d{3,5})\s*[-–]\s*(\d{3,5})\s*(?:USD|usd)?\s*/?(?:month|mo|monthly)',
+    # Scan description + full text blob for salary signals below floor
+
+    # Monthly range: "1200 - 1500 USD/mes" or "1200 - 1500 USD/month"
+    monthly_range = re.search(
+        r'(\d{3,5})\s*[-–]\s*(\d{3,5})\s*(?:USD|usd)?\s*/?(?:mes\b|month|mo\b|monthly)',
         text_blob
     )
-    if monthly_match:
-        high_monthly = int(monthly_match.group(2))
+    if monthly_range:
+        high_monthly = int(monthly_range.group(2))
         if high_monthly * 12 < SALARY_FLOOR:
             return -1, [f"Below floor: ${high_monthly}/mo = ${high_monthly*12:,}/yr"]
 
-    single_monthly = re.search(r'(\d{3,4})\s*(?:USD|usd)\s*/?\s*(?:month|mo)\b', text_blob)
+    # Single monthly: "1500 USD/mes" or "1500 USD/month"
+    single_monthly = re.search(
+        r'(\d{3,5})\s*(?:USD|usd)\s*/?\s*(?:mes\b|month|mo\b)',
+        text_blob
+    )
     if single_monthly:
         mv = int(single_monthly.group(1))
         if mv * 12 < SALARY_FLOOR:
             return -1, [f"Below floor: ${mv}/mo in description"]
+
+    # Hourly rate anywhere in text: "$10 - $15/hour", "10-15/hr"
+    hourly_in_text = re.search(
+        r'\$?(\d+)\s*[-–]?\s*\$?(\d*)\s*/\s*h(?:our|r)?',
+        text_blob
+    )
+    if hourly_in_text:
+        low_h = int(hourly_in_text.group(1))
+        if 1 < low_h < 100:  # sanity: ignore things like "500/hr"
+            if low_h * 40 * 52 < SALARY_FLOOR:
+                return -1, [f"Hourly rate too low: ${low_h}/hr in description"]
 
     # ── GATE 6: Commission-only / base below $2,500/month ─────────────────────
     COMMISSION_SIGNALS = [
@@ -597,13 +614,14 @@ def score_job(title, company, description, location, salary_text="", source=""):
         return -1, ["Commission-only compensation"]
 
     # Base salary explicitly stated as very low (< $2,500/month)
+    # Catches "base salary: 700 USDT", "month 1: 700 USDT", "month 1 base salary (700 USDT)"
     base_match = re.search(
-        r'base\s*salary[:\s]*(?:month\s*1[:\s]*)?(\d{3,4})\s*(?:USD|USDT|usd)?',
+        r'(?:base\s*salary|month\s*1)[^0-9]{0,30}?(\d{3,4})\s*(?:USD|USDT|usd)',
         text_blob
     )
     if base_match:
         base_val = int(base_match.group(1))
-        if base_val < 2500 and base_val > 100:  # filter out % values
+        if 100 < base_val < 2500:
             return -1, [f"Base salary too low: ${base_val}/mo"]
 
     # ══ SCORING ═══════════════════════════════════════════════════════════════
@@ -1296,13 +1314,25 @@ def scrape_getonboard(session):
                 comp_el = card.select_one("[class*=company], .employer, span[class*=company]")
                 company = comp_el.get_text(strip=True) if comp_el else ""
 
+                # Extract salary from card text (GetOnBoard shows "Sueldo $X - $Y USD/mes")
+                card_text_full = card.get_text(strip=True)
+                sal_el = card.select_one("[class*=salary], [class*=sueldo], [class*=compensation], [class*=wage]")
+                salary = sal_el.get_text(strip=True) if sal_el else ""
+                if not salary:
+                    sal_match = re.search(
+                        r'(?:sueldo|salary)[^\d]*(\d[\d,\.]*\s*[-–]\s*\d[\d,\.]*\s*(?:USD|usd)[^\s]*)',
+                        card_text_full, re.IGNORECASE
+                    )
+                    if sal_match:
+                        salary = sal_match.group(1)
+
                 time_el = card.select_one("time, [datetime], [class*=date], [class*=ago]")
                 posted = (time_el.get("datetime", "") or time_el.get_text(strip=True)) if time_el else ""
 
                 if not is_within_24h(posted):
                     continue
 
-                j = make_job(title, company, "LATAM / Remote", href, card.get_text(strip=True), "GetOnBoard", posted_date=posted)
+                j = make_job(title, company, "LATAM / Remote", href, card_text_full, "GetOnBoard", salary=salary, posted_date=posted)
                 if j:
                     jobs.append(j)
             except Exception:
@@ -1890,13 +1920,18 @@ def scrape_ddg_general(session):
 
 # Add your Telegram channel usernames here (without @)
 TELEGRAM_JOB_CHANNELS = [
-    "illuminatiJOBS",
-    "degencryptojobs",
-    "web3hiring",
-    "cryptojobslist",
+    # From user's confirmed list
+    "job_web3",
+    "opento_crypto",
     "jobstash",
     "DeJob_Global",
     "talentatweb3",
+    "web3_jobs_crypto_vazima",
+    "cryptojobslist",
+    "web3hiring",
+    # Additional active Web3 job channels
+    "illuminatiJOBS",
+    "degencryptojobs",
 ]
 
 def scrape_telegram_channels(session):
