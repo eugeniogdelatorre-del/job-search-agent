@@ -1,0 +1,45 @@
+name: Daily Job Search
+
+on:
+  schedule:
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Clear job cache (re-score all jobs fresh)
+        run: rm -f jobs_cache.json
+
+      - name: Run Job Search Agent
+        env:
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+        run: python3 job_search_agent_v2.py --verbose
+
+      - name: Commit updated digest to repo
+        run: |
+          git config user.name "Eugenio Garcia de la Torre"
+          git config user.email "eugeniogdelatorre@gmail.com"
+          git add public/index.html || true
+          git diff --cached --quiet || git commit -m "Daily digest $(date +%Y-%m-%d)"
+          git push || true

@@ -1,0 +1,87 @@
+{
+  "profile": {
+    "name": "Eugenio",
+    "target_roles": [
+      "Community Manager",
+      "Growth Manager", 
+      "KOL Manager",
+      "Marketing Manager",
+      "Community Lead",
+      "Head of Community",
+      "Social Media Manager",
+      "Developer Relations",
+      "Partnership Manager",
+      "Content Manager"
+    ],
+    "target_verticals": ["Web3", "Crypto", "DeFi", "RWA", "Oracles", "Gaming", "AI-Crypto"],
+    "seniority_levels": ["Mid", "Senior", "Lead", "Head"],
+    "work_type": "remote",
+    "timezone_preference": ["UTC-3", "UTC-5", "UTC-4", "Flexible"],
+    "languages": ["English", "Spanish"],
+    "salary_floor_usd": 40000,
+    "exclude_keywords": ["intern", "junior", "entry-level", "unpaid", "volunteer"],
+    "preferred_regions": ["LATAM", "Global", "Americas", "Europe"]
+  },
+  "scoring": {
+    "dimensions": {
+      "role_fit": {
+        "weight": 0.30,
+        "description": "How closely the title matches target roles",
+        "keywords_boost": ["community", "growth", "kol", "marketing", "social", "content"],
+        "keywords_penalty": ["engineer", "solidity", "rust", "devops", "backend"]
+      },
+      "vertical_fit": {
+        "weight": 0.20,
+        "description": "Alignment with target Web3 verticals",
+        "boost_categories": ["DeFi", "RWA", "Oracle", "Gaming", "CEX", "L1", "L2"],
+        "neutral_categories": ["NFT", "Bridge", "Forensics", "Services"],
+        "penalty_categories": []
+      },
+      "channel_mix": {
+        "weight": 0.15,
+        "description": "Source reliability and quality signal",
+        "tier_1_sources": ["Direct career page", "Greenhouse", "Lever", "Workday"],
+        "tier_2_sources": ["CryptoJobsList", "Web3.career", "CryptocurrencyJobs"],
+        "tier_3_sources": ["Indeed", "LinkedIn", "Remote boards"]
+      },
+      "team_stage": {
+        "weight": 0.15,
+        "description": "Founding team quality and project maturity",
+        "boost_signals": ["Series B+", "Top 100 CMC", "Profitable", "VC-backed"],
+        "neutral_signals": ["Series A", "Top 500 CMC", "Growing"],
+        "penalty_signals": ["Pre-seed", "No funding", "Token crashed 90%+"]
+      },
+      "geo_timezone": {
+        "weight": 0.10,
+        "description": "Geographic and timezone compatibility",
+        "boost": ["Remote-first", "LATAM-friendly", "Americas timezone"],
+        "neutral": ["Global", "Flexible"],
+        "penalty": ["On-site only", "Asia-only", "Europe-only"]
+      },
+      "metrics_clarity": {
+        "weight": 0.10,
+        "description": "How clearly the listing defines responsibilities and comp",
+        "boost_signals": ["Salary range listed", "Clear KPIs", "Team size mentioned"],
+        "neutral_signals": ["Competitive salary", "Some metrics"],
+        "penalty_signals": ["No salary info", "Vague description"]
+      }
+    },
+    "thresholds": {
+      "hot": 80,
+      "warm": 60,
+      "cold": 40
+    }
+  },
+  "display": {
+    "theme": "midnight-navy",
+    "max_results_per_page": 50,
+    "default_sort": "score_desc",
+    "show_applied": true,
+    "show_rejected": false
+  },
+  "notifications": {
+    "enabled": false,
+    "hot_score_alert": 85,
+    "new_source_alert": true
+  }
+}

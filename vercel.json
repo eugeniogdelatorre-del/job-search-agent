@@ -1,5 +1,14 @@
 {
+  "buildCommand": "echo 'Static site, no build needed'",
   "outputDirectory": "public",
-  "buildCommand": "",
-  "framework": null
+  "framework": null,
+  "headers": [
+    {
+      "source": "/data/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=300, s-maxage=300" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
 }

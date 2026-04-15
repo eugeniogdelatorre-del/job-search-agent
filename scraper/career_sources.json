@@ -1,0 +1,124 @@
+{
+  "metadata": {
+    "version": "2.0.0",
+    "last_updated": "2026-04-15",
+    "total_sources": 85,
+    "groups": 5,
+    "schedule_note": "Each group runs once daily at its designated UTC hour to stay within free tier limits"
+  },
+  "groups": {
+    "group_1": {
+      "name": "Mega-Cap & Layer-1/Layer-2",
+      "cron_utc": "0 6 * * *",
+      "sources": [
+        {"name": "Solana", "url": "https://jobs.solana.com/", "category": "L1"},
+        {"name": "Binance", "url": "https://jobs.binance.com/", "category": "CEX"},
+        {"name": "IOHK (Cardano)", "url": "https://iohk.io/en/careers/", "category": "L1"},
+        {"name": "Tether", "url": "https://tether.to/en/careers/", "category": "Stablecoin"},
+        {"name": "Circle", "url": "https://careers.circle.com/us/en/", "category": "Stablecoin"},
+        {"name": "Ripple", "url": "https://ripple.com/company/careers/", "category": "Payments"},
+        {"name": "Tron", "url": "https://boards.greenhouse.io/tron", "category": "L1"},
+        {"name": "Arbitrum", "url": "https://jobs.arbitrum.io/", "category": "L2"},
+        {"name": "Optimism", "url": "https://optimism.breezy.hr/", "category": "L2"},
+        {"name": "Polygon", "url": "https://polygon.technology/careers", "category": "L2"},
+        {"name": "Avalanche", "url": "https://jobs.avax.network/", "category": "L1"},
+        {"name": "TON", "url": "https://jobs.ton.org/", "category": "L1"},
+        {"name": "Sui (Mysten Labs)", "url": "https://mystenlabs.com/careers", "category": "L1"},
+        {"name": "Aptos", "url": "https://aptoslabs.com/careers", "category": "L1"},
+        {"name": "Near Protocol", "url": "https://careers.near.org/", "category": "L1"},
+        {"name": "Fuel Network", "url": "https://fuel.network/careers", "category": "L2"},
+        {"name": "OKX", "url": "https://www.okx.com/es-la/join-us/openings", "category": "CEX"}
+      ]
+    },
+    "group_2": {
+      "name": "DeFi, Exchanges & Custody",
+      "cron_utc": "0 10 * * *",
+      "sources": [
+        {"name": "Aave", "url": "https://aave.com/careers", "category": "DeFi"},
+        {"name": "MakerDAO / Sky", "url": "https://makerdao.com/en/careers", "category": "DeFi"},
+        {"name": "Uniswap", "url": "https://uniswap.org/careers", "category": "DeFi"},
+        {"name": "Lido", "url": "https://lido.fi/careers", "category": "DeFi"},
+        {"name": "Ethena", "url": "https://www.ethena.fi/careers", "category": "DeFi"},
+        {"name": "Kraken", "url": "https://www.kraken.com/careers", "category": "CEX"},
+        {"name": "eToro", "url": "https://www.etoro.com/about/careers/", "category": "CEX"},
+        {"name": "Bitso", "url": "https://bitso.com/careers", "category": "CEX"},
+        {"name": "BitMEX", "url": "https://www.bitmex.com/careers", "category": "CEX"},
+        {"name": "Crypto.com", "url": "https://crypto.com/careers", "category": "CEX"},
+        {"name": "Anchorage Digital", "url": "https://www.anchorage.com/careers", "category": "Custody"},
+        {"name": "Galaxy Digital", "url": "https://www.galaxydigital.com/careers", "category": "Custody"},
+        {"name": "YouHodler", "url": "https://www.youhodler.com/careers", "category": "FinTech"},
+        {"name": "Exodus", "url": "https://www.exodus.com/careers", "category": "Wallet"},
+        {"name": "Ondo Finance", "url": "https://ondo.finance/careers", "category": "RWA"},
+        {"name": "Backed", "url": "https://backed.fi/careers", "category": "RWA"},
+        {"name": "Reental", "url": "https://reental.co/en/careers", "category": "RWA"}
+      ]
+    },
+    "group_3": {
+      "name": "Gaming, AI, Infra & Tools",
+      "cron_utc": "0 14 * * *",
+      "sources": [
+        {"name": "Sky Mavis (Axie)", "url": "https://skymavis.com/careers", "category": "Gaming"},
+        {"name": "Animoca Brands", "url": "https://www.animocabrands.com/careers", "category": "Gaming"},
+        {"name": "Immutable", "url": "https://www.immutable.com/careers", "category": "Gaming"},
+        {"name": "Chainlink", "url": "https://chainlinklabs.com/careers", "category": "Oracle"},
+        {"name": "Filecoin", "url": "https://careers.fil.org/jobs", "category": "Storage"},
+        {"name": "Hedera", "url": "https://hedera.com/careers/", "category": "L1"},
+        {"name": "Sequence", "url": "https://sequence.xyz/careers", "category": "Infra"},
+        {"name": "Chainalysis", "url": "https://www.chainalysis.com/careers/", "category": "Forensics"},
+        {"name": "TRM Labs", "url": "https://www.trmlabs.com/careers", "category": "Forensics"},
+        {"name": "Wormhole", "url": "https://wormhole.com/careers", "category": "Bridge"},
+        {"name": "LayerZero", "url": "https://layerzero.network/careers", "category": "Bridge"},
+        {"name": "Magic Eden", "url": "https://magiceden.io/careers", "category": "NFT"},
+        {"name": "Suno", "url": "https://suno.com/careers", "category": "AI"},
+        {"name": "Cursor", "url": "https://www.cursor.com/careers", "category": "DevTools"},
+        {"name": "Consensys", "url": "https://consensys.io/open-roles", "category": "DevTools"},
+        {"name": "Core Scientific", "url": "https://corescientific.com/careers/job-openings/", "category": "Mining"}
+      ]
+    },
+    "group_4": {
+      "name": "Job Boards & Aggregators",
+      "cron_utc": "0 18 * * *",
+      "sources": [
+        {"name": "CryptoJobsList", "url": "https://cryptojobslist.com/", "category": "Board"},
+        {"name": "Web3.career", "url": "https://web3.career/", "category": "Board"},
+        {"name": "CryptocurrencyJobs", "url": "https://cryptocurrencyjobs.co/", "category": "Board"},
+        {"name": "a16z Crypto Jobs", "url": "https://jobs.a16z.com/crypto", "category": "VC_Board"},
+        {"name": "We Work Remotely", "url": "https://weworkremotely.com/categories/remote-blockchain-jobs", "category": "Remote_Board"},
+        {"name": "Remotive", "url": "https://remotive.com/remote-jobs/blockchain", "category": "Remote_Board"},
+        {"name": "Remote OK", "url": "https://remoteok.com/remote-crypto-jobs", "category": "Remote_Board"},
+        {"name": "GetOnBoard", "url": "https://www.getonbrd.com/jobs/blockchain", "category": "LATAM_Board"},
+        {"name": "Torre", "url": "https://torre.ai/jobs?q=blockchain", "category": "LATAM_Board"},
+        {"name": "Paradex", "url": "https://cryptojobslist.com/companies/paradex", "category": "Aggregated"},
+        {"name": "Superis Labs", "url": "https://cryptojobslist.com/companies/superis-labs", "category": "Aggregated"},
+        {"name": "KernelDAO", "url": "https://cryptojobslist.com/companies/kerneldao", "category": "Aggregated"},
+        {"name": "Moonward Capital", "url": "https://cryptojobslist.com/companies/moonward-capital", "category": "Aggregated"}
+      ]
+    },
+    "group_5": {
+      "name": "VC, Niche & User-Added",
+      "cron_utc": "0 22 * * *",
+      "sources": [
+        {"name": "SignalFire", "url": "https://signalfire.com/careers", "category": "VC"},
+        {"name": "Spruce Systems", "url": "https://spruceid.com/careers", "category": "Identity"},
+        {"name": "Worldcoin", "url": "https://worldcoin.org/careers", "category": "Identity"},
+        {"name": "Pi Network", "url": "https://minepi.com/careers", "category": "L1"},
+        {"name": "HashKey Group", "url": "https://www.hashkey.com/en/careers", "category": "Exchange"},
+        {"name": "Kleros", "url": "https://kleros.io/careers", "category": "Dispute"},
+        {"name": "Bluesky", "url": "https://bsky.app/jobs", "category": "Social"},
+        {"name": "Bittensor", "url": "https://bittensor.com/about", "category": "AI"},
+        {"name": "ARQ Finance", "url": "https://www.arqfinance.com/es-AR/careers", "category": "Finance"},
+        {"name": "Based", "url": "https://based.one/careers", "category": "DeFi"},
+        {"name": "Kash Bot", "url": "https://kash.bot/careers", "category": "Bot"},
+        {"name": "Genius PR", "url": "https://cryptojobslist.com/companies/genius-pr", "category": "Services"},
+        {"name": "Multyr", "url": "https://cryptojobslist.com/companies/multyr-ltd", "category": "Services"},
+        {"name": "Headstart", "url": "https://cryptojobslist.com/companies/headstart", "category": "Recruiting"},
+        {"name": "Utila", "url": "https://cryptojobslist.com/companies/utila", "category": "Infra"},
+        {"name": "YieldSchool", "url": "https://cryptojobslist.com/companies/yieldschool", "category": "DeFi"},
+        {"name": "Rho Protocol", "url": "https://cryptojobslist.com/companies/rho-labs", "category": "DeFi"},
+        {"name": "Machine Phase Systems", "url": "https://machinephase.systems/", "category": "Dev"},
+        {"name": "Prime Albania", "url": "https://cryptojobslist.com/companies/prime-albania", "category": "Regional"},
+        {"name": "Rain", "url": "https://cryptojobslist.com/companies/rain", "category": "Regional"}
+      ]
+    }
+  }
+}
