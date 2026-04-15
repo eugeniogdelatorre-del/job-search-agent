@@ -2115,8 +2115,332 @@ def scrape_telegram_channels(session):
 
 
 # ============================================================================
-# PIPELINE
+# SCRAPERS — COMPANY CAREER PAGES (direct)
 # ============================================================================
+# Each entry: (company_name, careers_url, ats_type)
+# ats_type: "greenhouse" | "lever" | "ashby" | "breezy" | "workday" | "generic"
+# These are scraped directly — second-pass JD verification applies to all of them.
+# Source label is kept as "Company Careers" so they all get second-pass.
+
+COMPANY_CAREER_PAGES = [
+    # ── Mega-Cap Layer-1 ──────────────────────────────────────────────────────
+    ("Solana Foundation",   "https://jobs.solana.com/",                     "greenhouse"),
+    ("Binance",             "https://jobs.binance.com/en",                  "generic"),
+    ("IOHK / Cardano",      "https://iohk.io/en/careers/",                  "generic"),
+    # ── Stablecoins & Payments ────────────────────────────────────────────────
+    ("Circle",              "https://careers.circle.com/us/en/",            "generic"),
+    ("Ripple",              "https://ripple.com/company/careers/",          "greenhouse"),
+    ("Tron",                "https://boards.greenhouse.io/tron",            "greenhouse"),
+    # ── Layer-2 Scaling ───────────────────────────────────────────────────────
+    ("Arbitrum",            "https://jobs.arbitrum.io/jobs",                "generic"),
+    ("Optimism",            "https://optimism.breezy.hr/",                  "breezy"),
+    ("Polygon",             "https://polygon.technology/careers",           "generic"),
+    # ── Alt-L1s ───────────────────────────────────────────────────────────────
+    ("Avalanche / AVAX",    "https://jobs.avax.network/jobs",               "generic"),
+    ("TON Foundation",      "https://jobs.ton.org/jobs",                    "generic"),
+    ("Mysten Labs / Sui",   "https://mystenlabs.com/careers",               "greenhouse"),
+    ("Aptos Labs",          "https://aptoslabs.com/careers",                "greenhouse"),
+    ("NEAR Protocol",       "https://careers.near.org/",                    "greenhouse"),
+    # ── Top DeFi ─────────────────────────────────────────────────────────────
+    ("Aave",                "https://aave.com/careers",                     "generic"),
+    ("MakerDAO",            "https://makerdao.com/en/careers",              "generic"),
+    ("Uniswap Labs",        "https://uniswap.org/careers",                  "greenhouse"),
+    ("Lido",                "https://lido.fi/careers",                      "generic"),
+    ("Ethena",              "https://www.ethena.fi/careers",                "generic"),
+    # ── CEXs ─────────────────────────────────────────────────────────────────
+    ("Kraken",              "https://www.kraken.com/careers",               "lever"),
+    ("eToro",               "https://www.etoro.com/about/careers/",         "generic"),
+    ("Bitso",               "https://bitso.com/careers",                    "greenhouse"),
+    ("BitMEX",              "https://www.bitmex.com/careers",               "generic"),
+    ("Crypto.com",          "https://crypto.com/careers",                   "generic"),
+    ("OKX",                 "https://www.okx.com/es-la/join-us/openings",   "generic"),
+    # ── Institutional / Custody ───────────────────────────────────────────────
+    ("Anchorage Digital",   "https://www.anchorage.com/careers",            "greenhouse"),
+    ("Galaxy Digital",      "https://www.galaxydigital.com/careers",        "greenhouse"),
+    ("Exodus",              "https://www.exodus.com/careers",               "greenhouse"),
+    # ── Forensics & Compliance ────────────────────────────────────────────────
+    ("Chainalysis",         "https://www.chainalysis.com/careers/",         "greenhouse"),
+    ("TRM Labs",            "https://www.trmlabs.com/careers",              "greenhouse"),
+    # ── AI + Crypto / DePIN ───────────────────────────────────────────────────
+    ("Bittensor",           "https://bittensor.com/about",                  "generic"),
+    # ── RWA ───────────────────────────────────────────────────────────────────
+    ("Ondo Finance",        "https://ondo.finance/careers",                 "greenhouse"),
+    # ── Web3 Gaming ───────────────────────────────────────────────────────────
+    ("Sky Mavis / Axie",    "https://skymavis.com/careers",                 "greenhouse"),
+    ("Animoca Brands",      "https://www.animocabrands.com/careers",        "generic"),
+    ("Immutable",           "https://www.immutable.com/careers",            "greenhouse"),
+    # ── Oracles & Data ────────────────────────────────────────────────────────
+    ("Chainlink Labs",      "https://chainlinklabs.com/careers",            "greenhouse"),
+    ("Hedera",              "https://hedera.com/careers/",                  "greenhouse"),
+    # ── VC ───────────────────────────────────────────────────────────────────
+    ("a16z Crypto",         "https://jobs.a16z.com/crypto",                 "generic"),
+    ("Worldcoin",           "https://worldcoin.org/careers",                "ashby"),
+    # ── Cross-Chain / ZK ─────────────────────────────────────────────────────
+    ("Wormhole",            "https://wormhole.com/careers",                 "generic"),
+    ("LayerZero",           "https://layerzero.network/careers",            "greenhouse"),
+    # ── NFT / Consumer Web3 ───────────────────────────────────────────────────
+    ("Magic Eden",          "https://magiceden.io/careers",                 "ashby"),
+    # ── Dev Tools ────────────────────────────────────────────────────────────
+    ("ConsenSys",           "https://consensys.io/open-roles",              "greenhouse"),
+    # ── CryptoJobsList company pages ─────────────────────────────────────────
+    ("Paradex",             "https://cryptojobslist.com/companies/paradex", "cryptojobslist_co"),
+    ("KernelDAO",           "https://cryptojobslist.com/companies/kerneldao","cryptojobslist_co"),
+    ("Utila",               "https://cryptojobslist.com/companies/utila",   "cryptojobslist_co"),
+    ("Genius PR",           "https://cryptojobslist.com/companies/genius-pr","cryptojobslist_co"),
+    ("Rain",                "https://cryptojobslist.com/companies/rain",    "cryptojobslist_co"),
+    # ── Additional user-provided ─────────────────────────────────────────────
+    ("Core Scientific",     "https://corescientific.com/careers/job-openings/", "generic"),
+    ("Based.one",           "https://based.one/careers",                    "generic"),
+    ("HashKey",             "https://www.hashkey.com/en/careers",           "generic"),
+]
+
+
+def _scrape_greenhouse(session, url, company_name):
+    """Generic Greenhouse ATS scraper. Works for boards.greenhouse.io and custom domains."""
+    jobs = []
+    # Normalise: if it's a custom domain pointing to Greenhouse, fetch as-is
+    # If it's jobs.COMPANY.com we still try generic parse
+    resp = safe_get(session, url)
+    if not resp:
+        return jobs
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    # Greenhouse renders jobs in <div class="opening"> or <section class="level-0">
+    cards = (
+        soup.select("div.opening, section.level-0 .opening, tr.job-post, "
+                    "li[class*=opening], div[class*=job-opening]")
+        or soup.select("a[href*='/jobs/'], a[href*='greenhouse.io/']")
+    )
+
+    for card in cards:
+        try:
+            link_el = card if card.name == "a" else card.select_one("a[href]")
+            if not link_el:
+                continue
+            href = ensure_absolute_url(link_el.get("href", ""), url)
+            title_el = card.select_one("p.title, span.title, h3, h4, a, [class*=title]")
+            title = title_el.get_text(strip=True) if title_el else link_el.get_text(strip=True)
+            loc_el = card.select_one("p.location, span.location, [class*=location]")
+            location = loc_el.get_text(strip=True) if loc_el else "Remote"
+            dept_el = card.select_one("[class*=department], [class*=dept], [class*=team]")
+            desc = dept_el.get_text(strip=True) if dept_el else card.get_text(strip=True)
+            j = make_job(title, company_name, location, href, desc,
+                         "Company Careers", posted_date="today")
+            if j:
+                jobs.append(j)
+        except Exception:
+            continue
+    return jobs
+
+
+def _scrape_lever(session, url, company_name):
+    """Generic Lever ATS scraper."""
+    jobs = []
+    resp = safe_get(session, url)
+    if not resp:
+        return jobs
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    for card in soup.select("div.posting, li.posting, [class*=posting]"):
+        try:
+            link_el = card.select_one("a[href*='lever.co'], a[href]")
+            if not link_el:
+                continue
+            href = ensure_absolute_url(link_el.get("href", ""), url)
+            title_el = card.select_one("h5, h4, h3, [class*=title], .posting-name")
+            title = title_el.get_text(strip=True) if title_el else link_el.get_text(strip=True)
+            loc_el = card.select_one("[class*=location], .sort-by-location")
+            location = loc_el.get_text(strip=True) if loc_el else "Remote"
+            team_el = card.select_one("[class*=team], [class*=dept], .sort-by-team")
+            desc = (team_el.get_text(strip=True) if team_el else "") + " " + card.get_text(strip=True)
+            j = make_job(title, company_name, location, href, desc,
+                         "Company Careers", posted_date="today")
+            if j:
+                jobs.append(j)
+        except Exception:
+            continue
+    return jobs
+
+
+def _scrape_ashby(session, url, company_name):
+    """Generic Ashby ATS scraper."""
+    jobs = []
+    resp = safe_get(session, url)
+    if not resp:
+        return jobs
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    for card in soup.select("a[href*='/jobs/'], div[class*=ashby], li[class*=job], "
+                            "[class*=JobListing], [class*=job-listing]"):
+        try:
+            link_el = card if card.name == "a" else card.select_one("a[href]")
+            if not link_el:
+                continue
+            href = ensure_absolute_url(link_el.get("href", ""), url)
+            title_el = card.select_one("h3, h4, [class*=title], [class*=name]")
+            title = title_el.get_text(strip=True) if title_el else link_el.get_text(strip=True)
+            loc_el = card.select_one("[class*=location], [class*=Location]")
+            location = loc_el.get_text(strip=True) if loc_el else "Remote"
+            j = make_job(title, company_name, location, href,
+                         card.get_text(strip=True), "Company Careers", posted_date="today")
+            if j:
+                jobs.append(j)
+        except Exception:
+            continue
+    return jobs
+
+
+def _scrape_breezy(session, url, company_name):
+    """Generic Breezy HR ATS scraper."""
+    jobs = []
+    resp = safe_get(session, url)
+    if not resp:
+        return jobs
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    for card in soup.select("li.position, div.position, [class*=position], "
+                            "article[class*=job], a[href*='/p/']"):
+        try:
+            link_el = card if card.name == "a" else card.select_one("a[href]")
+            if not link_el:
+                continue
+            href = ensure_absolute_url(link_el.get("href", ""), url)
+            title_el = card.select_one("h2, h3, [class*=title], .position-title")
+            title = title_el.get_text(strip=True) if title_el else link_el.get_text(strip=True)
+            loc_el = card.select_one("[class*=location], li.location")
+            location = loc_el.get_text(strip=True) if loc_el else "Remote"
+            j = make_job(title, company_name, location, href,
+                         card.get_text(strip=True), "Company Careers", posted_date="today")
+            if j:
+                jobs.append(j)
+        except Exception:
+            continue
+    return jobs
+
+
+def _scrape_cryptojobslist_company(session, url, company_name):
+    """Scrape a company page on cryptojobslist.com/companies/SLUG."""
+    jobs = []
+    resp = safe_get(session, url)
+    if not resp:
+        return jobs
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    for card in soup.select("a[href*='/jobs/'], li[class*=job], div[class*=job], article"):
+        try:
+            link_el = card if card.name == "a" else card.select_one("a[href*='/jobs/']")
+            if not link_el:
+                continue
+            href = ensure_absolute_url(link_el.get("href", ""), "https://cryptojobslist.com")
+            title_el = card.select_one("h2, h3, h4, [class*=title], strong")
+            title = title_el.get_text(strip=True) if title_el else link_el.get_text(strip=True)
+            loc_el = card.select_one("[class*=location]")
+            location = loc_el.get_text(strip=True) if loc_el else "Remote"
+            time_el = card.select_one("time, [datetime], [class*=date], [class*=ago]")
+            posted = (time_el.get("datetime", "") or time_el.get_text(strip=True)) if time_el else ""
+            if posted and not is_within_24h(posted):
+                continue
+            j = make_job(title, company_name, location, href,
+                         card.get_text(strip=True), "Company Careers", posted_date=posted or "today")
+            if j:
+                jobs.append(j)
+        except Exception:
+            continue
+    return jobs
+
+
+def _scrape_generic_careers(session, url, company_name):
+    """Generic career page scraper — works for most custom pages."""
+    jobs = []
+    resp = safe_get(session, url)
+    if not resp:
+        return jobs
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    # Remove nav/footer/header noise
+    for tag in soup(["nav", "footer", "header", "script", "style"]):
+        tag.decompose()
+
+    # Wide selector net — grabs job rows/cards across many different layouts
+    candidates = soup.select(
+        "a[href*='/job'], a[href*='/jobs/'], a[href*='/careers/'], a[href*='/opening'], "
+        "a[href*='greenhouse.io'], a[href*='lever.co'], a[href*='ashbyhq.com'], "
+        "a[href*='workable.com'], a[href*='smartrecruiters.com'], "
+        "li[class*=job], div[class*=job], article[class*=job], "
+        "tr[class*=job], div[class*=opening], div[class*=position], "
+        "div[class*=role], li[class*=role], div[class*=listing], "
+        "div[class*=vacancy], li[class*=vacancy]"
+    )
+
+    seen_hrefs = set()
+    for card in candidates:
+        try:
+            link_el = card if card.name == "a" else card.select_one("a[href]")
+            if not link_el:
+                continue
+            href = ensure_absolute_url(link_el.get("href", ""), url)
+            if not href or href in seen_hrefs:
+                continue
+            # Skip clearly non-job URLs
+            if any(p in href.lower() for p in [
+                "/blog", "/news", "/about", "/team", "/press", "/legal",
+                "/privacy", "/terms", "/contact", "mailto:", "twitter.com",
+                "linkedin.com", "facebook.com", "instagram.com", "#"
+            ]):
+                continue
+            seen_hrefs.add(href)
+
+            title_el = card.select_one(
+                "h1, h2, h3, h4, [class*=title], [class*=name], "
+                "[class*=position], strong, b"
+            )
+            title = (title_el.get_text(strip=True)
+                     if title_el else link_el.get_text(strip=True))
+            loc_el = card.select_one("[class*=location], [class*=city], [class*=region]")
+            location = loc_el.get_text(strip=True) if loc_el else "Remote"
+            time_el = card.select_one("time, [datetime], [class*=date], [class*=posted]")
+            posted = ""
+            if time_el:
+                posted = time_el.get("datetime", "") or time_el.get_text(strip=True)
+
+            j = make_job(title, company_name, location, href,
+                         card.get_text(strip=True), "Company Careers",
+                         posted_date=posted or "today")
+            if j:
+                jobs.append(j)
+        except Exception:
+            continue
+    return jobs
+
+
+def scrape_company_career_pages(session):
+    """Scrape all company career pages defined in COMPANY_CAREER_PAGES."""
+    jobs = []
+    ATS_SCRAPERS = {
+        "greenhouse":         _scrape_greenhouse,
+        "lever":              _scrape_lever,
+        "ashby":              _scrape_ashby,
+        "breezy":             _scrape_breezy,
+        "cryptojobslist_co":  _scrape_cryptojobslist_company,
+        "generic":            _scrape_generic_careers,
+    }
+
+    for company_name, url, ats_type in COMPANY_CAREER_PAGES:
+        try:
+            scraper_fn = ATS_SCRAPERS.get(ats_type, _scrape_generic_careers)
+            results = scraper_fn(session, url, company_name)
+            if results:
+                log.info(f"  {company_name}: {len(results)} roles found")
+            jobs.extend(results)
+        except Exception as e:
+            log.warning(f"  {company_name} failed: {e}")
+            continue
+
+    log.info(f"Company career pages: {len(jobs)} total jobs ({len(COMPANY_CAREER_PAGES)} companies)")
+    return jobs
+
+
+
 
 ALL_SCRAPERS = [
     # Web3 specific (10 active)
@@ -2154,6 +2478,8 @@ ALL_SCRAPERS = [
     ("DuckDuckGo", scrape_ddg_general),
     # Telegram
     ("Telegram", scrape_telegram_channels),
+    # Company career pages (direct)
+    ("Company Careers", scrape_company_career_pages),
 ]
 
 
@@ -2658,7 +2984,7 @@ h1,h2,h3{{font-family:'Manrope',system-ui,sans-serif}}
 
   <footer class="ftr">
     <p><strong>Eugenio García de la Torre</strong> · Job Search Agent v2</p>
-    <p>20 sources · Web3 only · Remote only · $30K+ · Argentina-eligible · 72h recency</p>
+    <p>30+ sources · Web3 only · Remote only · $30K+ · Argentina-eligible · 72h recency</p>
     <p>Next update: {(datetime.now() + timedelta(days=1)).strftime('%A, %B %d · 8:00 AM ART')}</p>
   </footer>
 
