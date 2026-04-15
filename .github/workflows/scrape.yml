@@ -1,0 +1,112 @@
+name: Staggered Career Scraper
+
+on:
+  schedule:
+    # 5 staggered runs per day - each triggers a different source group
+    - cron: '0 6 * * *'    # Group 1: Mega-Cap & L1/L2
+    - cron: '0 10 * * *'   # Group 2: DeFi, Exchanges & Custody
+    - cron: '0 14 * * *'   # Group 3: Gaming, AI, Infra & Tools
+    - cron: '0 18 * * *'   # Group 4: Job Boards & Aggregators
+    - cron: '0 22 * * *'   # Group 5: VC, Niche & User-Added
+  workflow_dispatch:
+    inputs:
+      group:
+        description: 'Which group to scrape (1-5 or all)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+          - '4'
+          - '5'
+          - 'all'
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine scrape group
+        id: group
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "group=${{ inputs.group }}" >> $GITHUB_OUTPUT
+          else
+            # Map UTC hour to group number
+            HOUR=$(date -u +%H)
+            case $HOUR in
+              06) GROUP=1 ;;
+              10) GROUP=2 ;;
+              14) GROUP=3 ;;
+              18) GROUP=4 ;;
+              22) GROUP=5 ;;
+              *)  GROUP=all ;;
+            esac
+            echo "group=$GROUP" >> $GITHUB_OUTPUT
+          fi
+          echo "Running group: $(cat $GITHUB_OUTPUT)"
+
+      - name: Run scraper
+        run: |
+          python scraper/scrape.py --group ${{ steps.group.outputs.group }}
+
+      - name: Commit and push updated data
+        run: |
+          git config user.name "Eugenio Garcia de la Torre"
+          git config user.email "eugeniogdelatorre@gmail.com"
+          git add public/data/jobs.json
+          # Only commit if there are changes
+          if git diff --cached --quiet; then
+            echo "No new jobs found, skipping commit"
+          else
+            JOBS=$(python -c "import json; d=json.load(open('public/data/jobs.json')); print(d['metadata']['total_jobs'])")
+            git commit -m "scrape: group ${{ steps.group.outputs.group }} - ${JOBS} total jobs [skip ci]"
+            git push
+          fi
+
+  deploy:
+    needs: scrape
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main  # Get the latest commit from scrape job
+
+      - name: Pull latest changes
+        run: git pull origin main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      - name: Deploy to Vercel
+        run: vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

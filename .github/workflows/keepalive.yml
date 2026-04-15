@@ -1,0 +1,23 @@
+name: Keep Alive
+
+on:
+  schedule:
+    - cron: '0 12 1,15 * *'  # 1st and 15th of each month
+
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update keepalive timestamp
+        run: |
+          echo "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > .keepalive
+          git config user.name "Eugenio Garcia de la Torre"
+          git config user.email "eugeniogdelatorre@gmail.com"
+          git add .keepalive
+          git commit -m "chore: keepalive ping [skip ci]" || true
+          git push || true
