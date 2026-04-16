@@ -136,8 +136,108 @@ def fetch_page(url: str, retries: int = MAX_RETRIES) -> str | None:
     return None
 
 
+# Nitter instances rotated for X feed scraping (in case some are down)
+NITTER_INSTANCES = [
+    "nitter.net",
+    "nitter.privacydev.net",
+    "nitter.poast.org",
+    "nitter.tiekoetter.com",
+]
+
+
+def scrape_x_handle(source: dict) -> list[dict]:
+    """Scrape an X/Twitter handle via Nitter RSS, with instance fallback."""
+    handle = source.get("handle", "")
+    company = source["name"]
+    category = source.get("category", "X_Feed")
+    print(f"  Scraping X handle @{handle}")
+    
+    rss_xml = None
+    used_instance = None
+    for instance in NITTER_INSTANCES:
+        url = f"https://{instance}/{handle}/rss"
+        rss_xml = fetch_page(url, retries=0)
+        if rss_xml and "<item>" in rss_xml:
+            used_instance = instance
+            break
+    
+    if not rss_xml:
+        print(f"    All Nitter instances failed for @{handle}")
+        return []
+    
+    # Parse RSS feed for job-relevant tweets
+    try:
+        soup = BeautifulSoup(rss_xml, "xml")
+    except Exception:
+        soup = BeautifulSoup(rss_xml, "html.parser")
+    
+    jobs = []
+    seen = set()
+    items = soup.find_all("item")[:30]  # Last 30 tweets
+    
+    for item in items:
+        title_el = item.find("title")
+        link_el = item.find("link")
+        desc_el = item.find("description")
+        date_el = item.find("pubDate")
+        
+        if not title_el:
+            continue
+        raw_text = title_el.get_text(strip=True)
+        if not raw_text or len(raw_text) < 10:
+            continue
+        
+        # Filter for job-relevant tweets
+        text_lower = raw_text.lower()
+        job_signals = ["hiring", "job", "career", "position", "role", "opening",
+                       "apply", "join us", "we're looking", "we are looking",
+                       "manager", "lead", "director", "growth", "marketing",
+                       "community", "kol", "developer", "engineer"]
+        if not any(s in text_lower for s in job_signals):
+            continue
+        
+        title = clean_title(raw_text[:200])
+        if not title or title.lower() in seen:
+            continue
+        seen.add(title.lower())
+        
+        tweet_url = link_el.get_text(strip=True) if link_el else f"https://x.com/{handle}"
+        # Nitter URLs to x.com
+        if "nitter" in tweet_url:
+            tweet_url = tweet_url.replace(f"https://{used_instance}", "https://x.com").replace(f"http://{used_instance}", "https://x.com")
+        
+        description = ""
+        if desc_el:
+            desc_html = desc_el.get_text(strip=True)
+            desc_soup = BeautifulSoup(desc_html, "html.parser")
+            description = desc_soup.get_text(strip=True)[:500]
+        
+        salary = extract_salary_range(description)
+        
+        jobs.append({
+            "id": job_id(title, company, tweet_url),
+            "title": title,
+            "company": company,
+            "category": category,
+            "url": tweet_url,
+            "source_url": f"https://x.com/{handle}",
+            "location": "Remote",
+            "salary": salary,
+            "description": description,
+            "scraped_at": datetime.now(timezone.utc).isoformat(),
+            "raw_score": None
+        })
+    
+    print(f"    Found {len(jobs)} job tweets via {used_instance}")
+    return jobs
+
+
 def scrape_career_page(source: dict) -> list[dict]:
     """Scrape a single career page and extract job listings."""
+    # Route X feeds to dedicated handler
+    if source.get("category") == "X_Feed" or "nitter" in source.get("url", "").lower():
+        return scrape_x_handle(source)
+    
     url = source["url"]
     company = source["name"]
     category = source.get("category", "Unknown")

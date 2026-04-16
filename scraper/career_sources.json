@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "version": "2.0.0",
+    "version": "2.1.0",
     "last_updated": "2026-04-15",
-    "total_sources": 85,
-    "groups": 5,
+    "total_sources": 91,
+    "groups": 6,
     "schedule_note": "Each group runs once daily at its designated UTC hour to stay within free tier limits"
   },
   "groups": {
@@ -91,7 +91,10 @@
         {"name": "Paradex", "url": "https://cryptojobslist.com/companies/paradex", "category": "Aggregated"},
         {"name": "Superis Labs", "url": "https://cryptojobslist.com/companies/superis-labs", "category": "Aggregated"},
         {"name": "KernelDAO", "url": "https://cryptojobslist.com/companies/kerneldao", "category": "Aggregated"},
-        {"name": "Moonward Capital", "url": "https://cryptojobslist.com/companies/moonward-capital", "category": "Aggregated"}
+        {"name": "Moonward Capital", "url": "https://cryptojobslist.com/companies/moonward-capital", "category": "Aggregated"},
+        {"name": "RemoteLeaf", "url": "https://remoteleaf.com/", "category": "Remote_Board"},
+        {"name": "Workable", "url": "https://jobs.workable.com/search?query=web3", "category": "ATS_Board"},
+        {"name": "TokenJobs", "url": "https://www.tokenjobs.io/", "category": "Board"}
       ]
     },
     "group_5": {
@@ -118,6 +121,18 @@
         {"name": "Machine Phase Systems", "url": "https://machinephase.systems/", "category": "Dev"},
         {"name": "Prime Albania", "url": "https://cryptojobslist.com/companies/prime-albania", "category": "Regional"},
         {"name": "Rain", "url": "https://cryptojobslist.com/companies/rain", "category": "Regional"}
+      ]
+    },
+    "group_6": {
+      "name": "X / Twitter Handles (RSS via Nitter)",
+      "cron_utc": "30 22 * * *",
+      "note": "X handles scraped via Nitter RSS feeds. If a Nitter instance is down, the scraper logs the error and skips. Add more Nitter instances to nitter_instances list in scrape.py if needed.",
+      "sources": [
+        {"name": "X: @jobsincrypto", "url": "https://nitter.net/jobsincrypto/rss", "category": "X_Feed", "handle": "jobsincrypto"},
+        {"name": "X: @Web3Career", "url": "https://nitter.net/Web3Career/rss", "category": "X_Feed", "handle": "Web3Career"},
+        {"name": "X: @CryptoJobZone", "url": "https://nitter.net/CryptoJobZone/rss", "category": "X_Feed", "handle": "CryptoJobZone"},
+        {"name": "X: @CryptoJobsList", "url": "https://nitter.net/CryptoJobsList/rss", "category": "X_Feed", "handle": "CryptoJobsList"},
+        {"name": "X: @Web3Jobhq", "url": "https://nitter.net/Web3Jobhq/rss", "category": "X_Feed", "handle": "Web3Jobhq"}
       ]
     }
   }

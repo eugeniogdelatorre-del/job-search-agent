@@ -62,8 +62,9 @@ Trigger manually from GitHub Actions > "Staggered Career Scraper" > Run workflow
 | 06:00 | 1 | 17 | Mega-cap L1s, L2s, CEXs |
 | 10:00 | 2 | 17 | DeFi, exchanges, custody, RWA |
 | 14:00 | 3 | 16 | Gaming, AI, infra, dev tools |
-| 18:00 | 4 | 13 | Job boards & aggregators |
+| 18:00 | 4 | 16 | Job boards & aggregators |
 | 22:00 | 5 | 20 | VCs, niche, user-added sources |
+| 22:30 | 6 | 5 | X / Twitter handles via Nitter RSS |
 
 ## Multi-Tenant Usage
 

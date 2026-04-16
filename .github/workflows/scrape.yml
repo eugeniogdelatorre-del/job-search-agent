@@ -2,16 +2,17 @@ name: Staggered Career Scraper
 
 on:
   schedule:
-    # 5 staggered runs per day - each triggers a different source group
+    # 6 staggered runs per day - each triggers a different source group
     - cron: '0 6 * * *'    # Group 1: Mega-Cap & L1/L2
     - cron: '0 10 * * *'   # Group 2: DeFi, Exchanges & Custody
     - cron: '0 14 * * *'   # Group 3: Gaming, AI, Infra & Tools
     - cron: '0 18 * * *'   # Group 4: Job Boards & Aggregators
     - cron: '0 22 * * *'   # Group 5: VC, Niche & User-Added
+    - cron: '30 22 * * *'  # Group 6: X / Twitter Handles
   workflow_dispatch:
     inputs:
       group:
-        description: 'Which group to scrape (1-5 or all)'
+        description: 'Which group to scrape (1-6 or all)'
         required: true
         default: 'all'
         type: choice
@@ -21,6 +22,7 @@ on:
           - '3'
           - '4'
           - '5'
+          - '6'
           - 'all'
 
 permissions:
@@ -51,16 +53,21 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "group=${{ inputs.group }}" >> $GITHUB_OUTPUT
           else
-            # Map UTC hour to group number
+            # Map UTC hour:minute to group number
             HOUR=$(date -u +%H)
-            case $HOUR in
-              06) GROUP=1 ;;
-              10) GROUP=2 ;;
-              14) GROUP=3 ;;
-              18) GROUP=4 ;;
-              22) GROUP=5 ;;
-              *)  GROUP=all ;;
-            esac
+            MIN=$(date -u +%M)
+            if [ "$HOUR" = "22" ] && [ "$MIN" = "30" ]; then
+              GROUP=6
+            else
+              case $HOUR in
+                06) GROUP=1 ;;
+                10) GROUP=2 ;;
+                14) GROUP=3 ;;
+                18) GROUP=4 ;;
+                22) GROUP=5 ;;
+                *)  GROUP=all ;;
+              esac
+            fi
             echo "group=$GROUP" >> $GITHUB_OUTPUT
           fi
           echo "Running group: $(cat $GITHUB_OUTPUT)"
