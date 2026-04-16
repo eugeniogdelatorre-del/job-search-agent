@@ -1,232 +1,485 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Job Search Scoring Configurator</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Job Digest — Thursday, April 16, 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0f1923; font-family: 'Space Grotesk', sans-serif; }
-  input[type="range"] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; outline: none; }
-  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #9FE1CB; cursor: pointer; border: 2px solid #0f1923; }
-  input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #9FE1CB; cursor: pointer; border: 2px solid #0f1923; }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: #0c1520; }
-  ::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 3px; }
-  #root { min-height: 100vh; }
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0B0F19;--s1:#111827;--s2:#1F2937;--s3:#374151;
+  --b:rgba(255,255,255,0.06);--b2:rgba(255,255,255,0.1);
+  --t1:#F9FAFB;--t2:#9CA3AF;--t3:#6B7280;
+  --acc:#6366F1;--green:#10B981;--amber:#F59E0B;--red:#EF4444;
+  --r:14px;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t1);line-height:1.6;min-height:100vh}
+h1,h2,h3{font-family:'Manrope',system-ui,sans-serif}
+
+.wrap{max-width:780px;margin:0 auto;padding:32px 20px 80px}
+
+/* ── Header ── */
+.hdr{text-align:center;padding:48px 0 36px;border-bottom:1px solid var(--b);margin-bottom:28px}
+.hdr-eye{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--acc);margin-bottom:10px}
+.hdr h1{font-size:32px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--t1),var(--t2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdr-date{color:var(--t3);font-size:13px;margin-top:6px}
+.stats{display:flex;justify-content:center;gap:40px;margin-top:28px}
+.stat-n{font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--t1)}
+.stat-l{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);margin-top:2px}
+
+/* ── Filters ── */
+.filters{
+  display:flex;flex-wrap:wrap;gap:8px;padding:16px 0 20px;
+  border-bottom:1px solid var(--b);margin-bottom:24px;
+  align-items:center;
+}
+.filters-label{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-right:4px;font-family:'JetBrains Mono',monospace}
+.filter-btn{
+  font-size:12px;padding:6px 14px;border-radius:999px;
+  border:1px solid var(--b2);background:transparent;color:var(--t2);
+  cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;
+}
+.filter-btn:hover{border-color:var(--acc);color:var(--t1)}
+.filter-btn.active{background:var(--acc);border-color:var(--acc);color:#fff}
+.filter-btn .cnt{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  background:rgba(255,255,255,0.1);padding:1px 6px;border-radius:99px;margin-left:4px;
+}
+.filter-btn.active .cnt{background:rgba(255,255,255,0.2)}
+.score-filter{display:flex;align-items:center;gap:8px;margin-left:auto}
+.score-filter label{font-size:11px;color:var(--t3);font-family:'JetBrains Mono',monospace}
+.score-filter input[type=range]{
+  width:100px;height:4px;-webkit-appearance:none;appearance:none;
+  background:var(--s3);border-radius:2px;outline:none;
+}
+.score-filter input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--acc);cursor:pointer;border:2px solid var(--bg);
+}
+.score-val{font-size:12px;color:var(--acc);font-family:'JetBrains Mono',monospace;min-width:24px}
+
+/* ── Cards ── */
+.card{
+  background:var(--s1);border:1px solid var(--b);border-radius:var(--r);
+  padding:24px;margin-bottom:12px;position:relative;
+  transition:border-color .25s,transform .25s,opacity .25s;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:var(--r) var(--r) 0 0;
+  background:linear-gradient(90deg,var(--acc),#8B5CF6);
+  opacity:0;transition:opacity .25s;
+}
+.card:hover{border-color:var(--b2);transform:translateY(-2px)}
+.card:hover::before{opacity:1}
+.card.hidden{opacity:0;transform:scale(0.96);pointer-events:none;position:absolute;visibility:hidden}
+
+.card-main{display:flex;gap:16px;align-items:flex-start}
+.card-left{flex:1;min-width:0}
+.card-left h3{font-size:17px;font-weight:700;line-height:1.35;margin-bottom:6px}
+.card-left h3 a{color:var(--t1);text-decoration:none;transition:color .2s}
+.card-left h3 a:hover{color:var(--acc)}
+
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--t3);margin-bottom:10px}
+.dot{width:3px;height:3px;border-radius:50%;background:var(--s3);flex-shrink:0}
+.src{color:var(--acc);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+
+.desc{font-size:13px;color:var(--t3);line-height:1.55;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.badges{display:flex;flex-wrap:wrap;gap:6px}
+.badge{font-size:10px;padding:3px 10px;border-radius:6px;font-weight:600;font-family:'JetBrains Mono',monospace;letter-spacing:0.3px}
+.b-salary{background:#064E3B;color:#6EE7B7;border:1px solid #065F46}
+.b-latam{background:#78350F;color:#FCD34D;border:1px solid #92400E}
+.b-web3{background:#312E81;color:#A5B4FC;border:1px solid #3730A3}
+
+.card-right{flex-shrink:0}
+.ring{width:48px;height:48px}
+
+.card-action{margin-top:14px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.btn{
+  font-size:13px;padding:8px 22px;border-radius:8px;
+  background:rgba(99,102,241,0.12);color:var(--acc);
+  text-decoration:none;font-weight:600;
+  border:1px solid rgba(99,102,241,0.2);
+  transition:all .2s;
+}
+.btn:hover{background:var(--acc);color:#fff;border-color:var(--acc)}
+.btn-sec{
+  background:transparent;color:var(--t3);
+  border:1px solid var(--b);
+}
+.btn-sec:hover{background:var(--s2);color:var(--t1);border-color:var(--b2)}
+
+/* ── Empty ── */
+.empty{text-align:center;padding:64px 20px;color:var(--t3)}
+.empty svg{margin-bottom:16px;opacity:0.4}
+.empty h3{color:var(--t2);font-size:18px;margin-bottom:6px}
+
+/* ── Footer ── */
+.ftr{text-align:center;padding:32px 0;border-top:1px solid var(--b);margin-top:36px;font-size:12px;color:var(--t3)}
+.ftr p{margin:3px 0}
+.ftr strong{color:var(--t2)}
+
+/* ── Scroll reveal ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:fadeUp .4s ease both}
+.card:nth-child(2){animation-delay:.05s}
+.card:nth-child(3){animation-delay:.1s}
+.card:nth-child(4){animation-delay:.15s}
+.card:nth-child(5){animation-delay:.2s}
+
+/* ── Mobile ── */
+@media(max-width:600px){
+  .wrap{padding:20px 16px 60px}
+  .hdr h1{font-size:24px}
+  .stats{gap:24px}
+  .stat-n{font-size:24px}
+  .card-main{flex-direction:column}
+  .card-right{align-self:flex-start}
+  .ring{width:40px;height:40px}
+  .score-filter{margin-left:0;width:100%}
+  .card-action{justify-content:stretch}
+  .btn{width:100%;text-align:center}
+}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<div class="wrap">
+
+  <header class="hdr">
+    <div class="hdr-eye">Job Search Agent</div>
+    <h1>Daily Digest</h1>
+    <p class="hdr-date">Thursday, April 16, 2026 · 12:03 PM · Last 72 hours</p>
+    <div class="stats">
+      <div><div class="stat-n">9</div><div class="stat-l">Matches</div></div>
+      <div><div class="stat-n">6</div><div class="stat-l">Sources</div></div>
+      <div><div class="stat-n">75</div><div class="stat-l">Top Score</div></div>
+    </div>
+  </header>
+
+  <div class="filters">
+    <span class="filters-label">Filter</span>
+    <button class="filter-btn" data-source="Telegram @talentatweb3" onclick="toggleSource(this)">Telegram @talentatweb3 <span class="cnt">2</span></button><button class="filter-btn" data-source="Company Careers" onclick="toggleSource(this)">Company Careers <span class="cnt">2</span></button><button class="filter-btn" data-source="Telegram @web3_jobs_crypto_vazima" onclick="toggleSource(this)">Telegram @web3_jobs_crypto_vazima <span class="cnt">2</span></button><button class="filter-btn" data-source="Telegram @cryptojobslist" onclick="toggleSource(this)">Telegram @cryptojobslist <span class="cnt">1</span></button><button class="filter-btn" data-source="WeWorkRemotely" onclick="toggleSource(this)">WeWorkRemotely <span class="cnt">1</span></button><button class="filter-btn" data-source="Telegram @jobstash" onclick="toggleSource(this)">Telegram @jobstash <span class="cnt">1</span></button>
+    <div class="score-filter">
+      <label>Min score</label>
+      <input type="range" min="0" max="100" value="0" id="scoreSlider" oninput="filterCards()">
+      <span class="score-val" id="scoreVal">0</span>
+    </div>
+  </div>
+
+  <section id="jobList">
+    
+      <article class="card" data-score="75" data-source="Telegram @cryptojobslist">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://cjl.ist/g2clvnt54" target="_blank" rel="noopener">Growth Manager🏛️at Xbnk🌍Remote💰$90k-140k/year💥New! Posted one minute ago✅Apply →https://cjl.ist/g2clvnt54Or forward to</a></h3>
+            <div class="meta">
+              <span>cryptojobslist</span>
+              <span class="dot"></span>
+              <span>Remote</span>
+              <span class="dot"></span>
+              <span class="src">Telegram @cryptojobslist</span>
+            </div>
+            <p class="desc">💼Growth Manager🏛️at Xbnk🌍Remote💰$90k-140k/year💥New! Posted one minute ago✅Apply →https://cjl.ist/g2clvnt54Or forward to a friend!</p>
+            <div class="badges"><span class="badge b-web3">Web3</span></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#10b981" stroke-width="3"
+                stroke-dasharray="84.8 28.3" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#10b981" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">75</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://cjl.ist/g2clvnt54" target="_blank" rel="noopener" class="btn">Apply Now</a><a href="https://t.me/cryptojobslist/10853" target="_blank" rel="noopener" class="btn btn-sec">View on Telegram</a>
+        </div>
+      </article>
+      <article class="card" data-score="65" data-source="Telegram @talentatweb3">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://www.talentweb3.co/job/f7eb9c2a" target="_blank" rel="noopener">Hiring: Growth Lead at Jitohttps://www.talentweb3.co/job/f7eb9c2a—𝘊𝘶𝘳𝘢𝘵𝘦𝘥 𝘣𝘺 𝘛𝘢𝘭𝘦𝘯𝘵@𝘊𝘩𝘦𝘤𝘬 𝘰𝘶𝘵 𝘰𝘶𝘳 𝘰𝘵𝘩𝘦𝘳 𝘤𝘩𝘢𝘯𝘯𝘦𝘭𝘴:@talen</a></h3>
+            <div class="meta">
+              <span>talentatweb3</span>
+              <span class="dot"></span>
+              <span>Remote</span>
+              <span class="dot"></span>
+              <span class="src">Telegram @talentatweb3</span>
+            </div>
+            <p class="desc">🦄Hiring: Growth Lead at Jitohttps://www.talentweb3.co/job/f7eb9c2a—𝘊𝘶𝘳𝘢𝘵𝘦𝘥 𝘣𝘺 𝘛𝘢𝘭𝘦𝘯𝘵@𝘊𝘩𝘦𝘤𝘬 𝘰𝘶𝘵 𝘰𝘶𝘳 𝘰𝘵𝘩𝘦𝘳 𝘤𝘩𝘢𝘯𝘯𝘦𝘭𝘴:@talentatai|@talentatrobotics𝘏𝘪𝘳𝘪𝘯𝘨 𝘴𝘶𝘱𝘱𝘰𝘳𝘵:@kerffffc</p>
+            <div class="badges"><span class="badge b-web3">Web3</span></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#10b981" stroke-width="3"
+                stroke-dasharray="73.5 39.6" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#10b981" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">65</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://www.talentweb3.co/job/f7eb9c2a" target="_blank" rel="noopener" class="btn">Apply Now</a><a href="https://t.me/talentatweb3/1506" target="_blank" rel="noopener" class="btn btn-sec">View on Telegram</a>
+        </div>
+      </article>
+      <article class="card" data-score="65" data-source="Company Careers">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://jobs.solana.com/companies/celebratix-2/jobs/74464666-head-of-social-social-growth-lead#content" target="_blank" rel="noopener">Head of Social / Social Growth Lead</a></h3>
+            <div class="meta">
+              <span>Solana Foundation</span>
+              <span class="dot"></span>
+              <span>Remote</span>
+              <span class="dot"></span>
+              <span class="src">Company Careers</span>
+            </div>
+            <p class="desc">Head of Social / Social Growth Lead</p>
+            <div class="badges"></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#10b981" stroke-width="3"
+                stroke-dasharray="73.5 39.6" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#10b981" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">65</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://jobs.solana.com/companies/celebratix-2/jobs/74464666-head-of-social-social-growth-lead#content" target="_blank" rel="noopener" class="btn">View Role</a>
+        </div>
+      </article>
+      <article class="card" data-score="65" data-source="Company Careers">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://jobs.solana.com/companies/celebratix-2/jobs/74464666-head-of-social-social-growth-lead#content" target="_blank" rel="noopener">Read moreaboutHead of Social / Social Growth LeadatCelebratix</a></h3>
+            <div class="meta">
+              <span>Solana Foundation</span>
+              <span class="dot"></span>
+              <span>Remote</span>
+              <span class="dot"></span>
+              <span class="src">Company Careers</span>
+            </div>
+            <p class="desc">Read moreaboutHead of Social / Social Growth LeadatCelebratix</p>
+            <div class="badges"></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#10b981" stroke-width="3"
+                stroke-dasharray="73.5 39.6" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#10b981" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">65</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://jobs.solana.com/companies/celebratix-2/jobs/74464666-head-of-social-social-growth-lead#content" target="_blank" rel="noopener" class="btn">View Role</a>
+        </div>
+      </article>
+      <article class="card" data-score="60" data-source="WeWorkRemotely">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://weworkremotely.com/remote-jobs/forager-growth-lead" target="_blank" rel="noopener">Growth Lead</a></h3>
+            <div class="meta">
+              <span>Forager</span>
+              <span class="dot"></span>
+              <span>Remote</span>
+              <span class="dot"></span>
+              <span class="src">WeWorkRemotely</span>
+            </div>
+            <p class="desc">&lt;img src="https://we-work-remotely.imgix.net/logos/0170/9092/logo.gif?ixlib=rails-4.0.0&w=50&h=50&dpr=2&fit=fill&auto=compress" /&gt; &lt;p&gt; &lt;strong&gt;Headquarters:&lt;/strong&gt; Los Angeles &lt;br /&gt;&lt;strong&gt;URL:&lt;/st</p>
+            <div class="badges"></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
+                stroke-dasharray="67.9 45.2" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">60</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://weworkremotely.com/remote-jobs/forager-growth-lead" target="_blank" rel="noopener" class="btn">View Role</a>
+        </div>
+      </article>
+      <article class="card" data-score="60" data-source="Telegram @web3_jobs_crypto_vazima">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://www.linkedin.com/posts/jodijeffers_were-hiring-a-performance-marketing-lead-share-7450250128348778496-O6eM" target="_blank" rel="noopener">Hiring: Performance Marketing Lead - Bitfortune📍Remote (Global) |🕐Posted 14 hours ago - April 16, 2026 |💰Paid in Crypto</a></h3>
+            <div class="meta">
+              <span>web3_jobs_crypto_vazima</span>
+              <span class="dot"></span>
+              <span>Remote</span>
+              <span class="dot"></span>
+              <span class="src">Telegram @web3_jobs_crypto_vazima</span>
+            </div>
+            <p class="desc">💼Hiring: Performance Marketing Lead - Bitfortune📍Remote (Global) |🕐Posted 14 hours ago - April 16, 2026 |💰Paid in Crypto |🧑‍💻Performance MarketingBitfortune is a fast-growing crypto casino at the inte</p>
+            <div class="badges"><span class="badge b-web3">Web3</span></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
+                stroke-dasharray="67.9 45.2" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">60</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://www.linkedin.com/posts/jodijeffers_were-hiring-a-performance-marketing-lead-share-7450250128348778496-O6eM" target="_blank" rel="noopener" class="btn">Apply Now</a><a href="https://t.me/web3_jobs_crypto_vazima/8175" target="_blank" rel="noopener" class="btn btn-sec">View on Telegram</a>
+        </div>
+      </article>
+      <article class="card" data-score="55" data-source="Telegram @talentatweb3">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://www.talentweb3.co/job/2ccb5e69" target="_blank" rel="noopener">Hiring: Business Marketing Lead at Monad↳ High-performance EVM-compatible L1 blockchain with 10,000 TPS and 1-second...</a></h3>
+            <div class="meta">
+              <span>talentatweb3</span>
+              <span class="dot"></span>
+              <span>Remote</span>
+              <span class="dot"></span>
+              <span class="src">Telegram @talentatweb3</span>
+            </div>
+            <p class="desc">🦄Hiring: Business Marketing Lead at Monad↳ High-performance EVM-compatible L1 blockchain with 10,000 TPS and 1-second... · Series Ahttps://www.talentweb3.co/job/2ccb5e69—𝘊𝘶𝘳𝘢𝘵𝘦𝘥 𝘣𝘺 𝘛𝘢𝘭𝘦𝘯𝘵@𝘊𝘩𝘦𝘤𝘬 𝘰𝘶𝘵 𝘰𝘶</p>
+            <div class="badges"><span class="badge b-web3">Web3</span></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
+                stroke-dasharray="62.2 50.9" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">55</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://www.talentweb3.co/job/2ccb5e69" target="_blank" rel="noopener" class="btn">Apply Now</a><a href="https://t.me/talentatweb3/1512" target="_blank" rel="noopener" class="btn btn-sec">View on Telegram</a>
+        </div>
+      </article>
+      <article class="card" data-score="55" data-source="Telegram @web3_jobs_crypto_vazima">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://linkedin.com/company/moledao" target="_blank" rel="noopener">Hiring: Senior Business Development Manager - DeBox📍Remote (Global) |🕐Posted 14 hours ago - April 16, 2026 |💰Salary Neg</a></h3>
+            <div class="meta">
+              <span>web3_jobs_crypto_vazima</span>
+              <span class="dot"></span>
+              <span>Remote</span>
+              <span class="dot"></span>
+              <span class="src">Telegram @web3_jobs_crypto_vazima</span>
+            </div>
+            <p class="desc">💼Hiring: Senior Business Development Manager - DeBox📍Remote (Global) |🕐Posted 14 hours ago - April 16, 2026 |💰Salary Negotiable |🧑‍💻Full-time |🔗Web3 Social & Asset ManagementDeBox is a leading Web3-na</p>
+            <div class="badges"><span class="badge b-web3">Web3</span></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
+                stroke-dasharray="62.2 50.9" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">55</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://linkedin.com/company/moledao" target="_blank" rel="noopener" class="btn">Apply Now</a><a href="https://t.me/web3_jobs_crypto_vazima/8173" target="_blank" rel="noopener" class="btn btn-sec">View on Telegram</a>
+        </div>
+      </article>
+      <article class="card" data-score="50" data-source="Telegram @jobstash">
+        <div class="card-main">
+          <div class="card-left">
+            <h3><a href="https://jobstash.xyz/o-helius" target="_blank" rel="noopener">Heliusis hiring a hybridBusiness Development Leadin North AmericaHelius is looking for a Business Development Lead to ex</a></h3>
+            <div class="meta">
+              <span>jobstash</span>
+              <span class="dot"></span>
+              <span>Remote</span>
+              <span class="dot"></span>
+              <span class="src">Telegram @jobstash</span>
+            </div>
+            <p class="desc">Heliusis hiring a hybridBusiness Development Leadin North AmericaHelius is looking for a Business Development Lead to expand Helius’ presence across the Solana ecosystem and close high-value deals tha</p>
+            <div class="badges"><span class="badge b-web3">Web3</span></div>
+          </div>
+          <div class="card-right">
+            <svg class="ring" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#f59e0b" stroke-width="3"
+                stroke-dasharray="56.5 56.5" stroke-linecap="round"
+                transform="rotate(-90 22 22)"/>
+              <text x="22" y="22" text-anchor="middle" dominant-baseline="central"
+                fill="#f59e0b" font-size="12" font-weight="700" font-family="JetBrains Mono,monospace">50</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card-action">
+          <a href="https://jobstash.xyz/o-helius" target="_blank" rel="noopener" class="btn">Apply Now</a><a href="https://t.me/jobstash/24124" target="_blank" rel="noopener" class="btn btn-sec">View on Telegram</a>
+        </div>
+      </article>
+  </section>
+
+  <p id="noResults" style="display:none;text-align:center;color:var(--t3);padding:40px;font-size:14px;">
+    No jobs match the current filters. Try adjusting above.
+  </p>
+
+  <footer class="ftr">
+    <p><strong>Eugenio García de la Torre</strong> · Job Search Agent v2</p>
+    <p>30+ sources · Web3 only · Remote only · $30K+ · Argentina-eligible · 72h recency</p>
+    <p>Next update: Friday, April 17 · 8:00 AM ART</p>
+  </footer>
+
+</div>
+
 <script>
-const { useState, useEffect, useMemo, useCallback, createElement: h } = React;
+const activeSources = new Set();
 
-const DIMENSION_META = {
-  role: { label: "Role fit", color: "#5DCAA5", desc: "Title match to your targets" },
-  vertical: { label: "Vertical fit", color: "#85B7EB", desc: "Web3 sector alignment" },
-  channel: { label: "Channel quality", color: "#EF9F27", desc: "Source reliability signal" },
-  team: { label: "Team / stage", color: "#AFA9EC", desc: "Project maturity & funding" },
-  geo: { label: "Geo / timezone", color: "#ED93B1", desc: "Location compatibility" },
-  metrics: { label: "Metrics clarity", color: "#F0997B", desc: "Listing quality & comp info" },
-};
-
-const DEFAULT_WEIGHTS = { role: 30, vertical: 20, channel: 15, team: 15, geo: 10, metrics: 10 };
-
-const DEMO_JOBS = [
-  { id:"a1", title:"Community Lead", company:"Chainlink", category:"Oracle", url:"#", location:"Remote", salary:{min:90000,max:130000}, scraped_at:new Date().toISOString(), traits:{role:95,vertical:90,channel:85,team:92,geo:88,metrics:75} },
-  { id:"a2", title:"Growth Manager", company:"Aave", category:"DeFi", url:"#", location:"Remote - Americas", salary:{min:80000,max:120000}, scraped_at:new Date().toISOString(), traits:{role:92,vertical:88,channel:80,team:90,geo:85,metrics:70} },
-  { id:"a3", title:"KOL Manager", company:"Arbitrum", category:"L2", url:"#", location:"Remote", salary:{min:70000,max:100000}, scraped_at:new Date().toISOString(), traits:{role:90,vertical:85,channel:88,team:88,geo:80,metrics:65} },
-  { id:"a4", title:"Marketing Lead", company:"Polygon", category:"L2", url:"#", location:"Remote - Global", salary:{min:85000,max:140000}, scraped_at:new Date().toISOString(), traits:{role:88,vertical:82,channel:75,team:85,geo:90,metrics:80} },
-  { id:"a5", title:"Head of Community", company:"Immutable", category:"Gaming", url:"#", location:"Remote", salary:{min:100000,max:150000}, scraped_at:new Date().toISOString(), traits:{role:96,vertical:78,channel:90,team:80,geo:75,metrics:85} },
-  { id:"a6", title:"Social Media Manager", company:"Magic Eden", category:"NFT", url:"#", location:"Remote", salary:null, scraped_at:new Date().toISOString(), traits:{role:75,vertical:70,channel:82,team:78,geo:85,metrics:55} },
-  { id:"a7", title:"Developer Relations", company:"Solana", category:"L1", url:"#", location:"Remote - Americas", salary:{min:120000,max:180000}, scraped_at:new Date().toISOString(), traits:{role:72,vertical:92,channel:95,team:95,geo:90,metrics:90} },
-  { id:"a8", title:"Content Manager", company:"Ondo Finance", category:"RWA", url:"#", location:"Remote", salary:{min:65000,max:95000}, scraped_at:new Date().toISOString(), traits:{role:82,vertical:88,channel:70,team:75,geo:80,metrics:60} },
-  { id:"a9", title:"Partnership Manager", company:"LayerZero", category:"Bridge", url:"#", location:"Remote", salary:null, scraped_at:new Date().toISOString(), traits:{role:78,vertical:72,channel:78,team:82,geo:78,metrics:50} },
-  { id:"b1", title:"Community Manager", company:"Kraken", category:"CEX", url:"#", location:"Remote - LATAM", salary:{min:55000,max:85000}, scraped_at:new Date().toISOString(), traits:{role:94,vertical:80,channel:92,team:88,geo:95,metrics:82} },
-  { id:"b2", title:"Growth Lead", company:"Bitso", category:"CEX", url:"#", location:"Buenos Aires", salary:{min:45000,max:70000}, scraped_at:new Date().toISOString(), traits:{role:90,vertical:82,channel:85,team:80,geo:98,metrics:78} },
-  { id:"b3", title:"Senior Solidity Engineer", company:"Uniswap", category:"DeFi", url:"#", location:"Remote", salary:{min:180000,max:250000}, scraped_at:new Date().toISOString(), traits:{role:20,vertical:90,channel:95,team:95,geo:85,metrics:92} },
-  { id:"b4", title:"DevOps Engineer", company:"Circle", category:"Stablecoin", url:"#", location:"Remote", salary:{min:140000,max:200000}, scraped_at:new Date().toISOString(), traits:{role:15,vertical:85,channel:90,team:92,geo:82,metrics:88} },
-  { id:"b5", title:"Community Growth Lead", company:"Avalanche", category:"L1", url:"#", location:"Remote - Americas", salary:{min:75000,max:110000}, scraped_at:new Date().toISOString(), traits:{role:95,vertical:88,channel:88,team:85,geo:88,metrics:72} },
-  { id:"b6", title:"Marketing Manager", company:"Hedera", category:"L1", url:"#", location:"Remote", salary:{min:80000,max:120000}, scraped_at:new Date().toISOString(), traits:{role:88,vertical:80,channel:82,team:78,geo:80,metrics:70} },
-];
-
-function scoreJob(job, weights) {
-  const totalWeight = Object.values(weights).reduce((a,b)=>a+b,0)||1;
-  let score = 0;
-  Object.keys(DIMENSION_META).forEach(d => { score += ((job.traits?.[d]||0) * weights[d]) / totalWeight; });
-  return Math.round(score);
+function toggleSource(btn) {
+  const src = btn.dataset.source;
+  if (activeSources.has(src)) {
+    activeSources.delete(src);
+    btn.classList.remove('active');
+  } else {
+    activeSources.add(src);
+    btn.classList.add('active');
+  }
+  filterCards();
 }
 
-function App() {
-  const [weights, setWeights] = useState(DEFAULT_WEIGHTS);
-  const [savedWeights, setSavedWeights] = useState(DEFAULT_WEIGHTS);
-  const [compareMode, setCompareMode] = useState(false);
-  const [filter, setFilter] = useState("");
-  const [minScore, setMinScore] = useState(0);
-  const [sortBy, setSortBy] = useState("score");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [jobs, setJobs] = useState(DEMO_JOBS);
-  const [dataSource, setDataSource] = useState("demo");
-
-  useEffect(() => {
-    fetch("/data/jobs.json").then(r=>r.json()).then(data => {
-      if (data.jobs && data.jobs.length > 0) {
-        const withTraits = data.jobs.map(j => ({
-          ...j,
-          traits: j.traits || { role: Math.random()*100|0, vertical: Math.random()*100|0, channel: Math.random()*100|0, team: Math.random()*100|0, geo: Math.random()*100|0, metrics: Math.random()*100|0 }
-        }));
-        setJobs(withTraits);
-        setDataSource("live");
-      }
-    }).catch(()=>{});
-  }, []);
-
-  const totalWeight = useMemo(()=>Object.values(weights).reduce((a,b)=>a+b,0),[weights]);
-  const scoredJobs = useMemo(()=>jobs.map(j=>({...j, currentScore:scoreJob(j,weights), savedScore:scoreJob(j,savedWeights)})),[jobs,weights,savedWeights]);
-  const categories = useMemo(()=>{const c=new Set(jobs.map(j=>j.category));return["All",...Array.from(c).sort()];},[jobs]);
-
-  const filtered = useMemo(()=>{
-    let r = scoredJobs;
-    if(filter) r=r.filter(j=>j.title.toLowerCase().includes(filter.toLowerCase())||j.company.toLowerCase().includes(filter.toLowerCase()));
-    if(selectedCategory!=="All") r=r.filter(j=>j.category===selectedCategory);
-    if(minScore>0) r=r.filter(j=>j.currentScore>=minScore);
-    if(sortBy==="score") r.sort((a,b)=>b.currentScore-a.currentScore);
-    else if(sortBy==="company") r.sort((a,b)=>a.company.localeCompare(b.company));
-    return r;
-  },[scoredJobs,filter,minScore,sortBy,selectedCategory]);
-
-  const buckets = useMemo(()=>{const b={hot:0,warm:0,cold:0,ice:0};scoredJobs.forEach(j=>{const s=j.currentScore;if(s>=80)b.hot++;else if(s>=60)b.warm++;else if(s>=40)b.cold++;else b.ice++;});return b;},[scoredJobs]);
-  const maxBucket = Math.max(...Object.values(buckets),1);
-
-  const exportConfig = ()=>{
-    const cfg={scoring:{dimensions:{}},exported_at:new Date().toISOString()};
-    Object.keys(DIMENSION_META).forEach(d=>{cfg.scoring.dimensions[d]={weight:weights[d]/100};});
-    const blob=new Blob([JSON.stringify(cfg,null,2)],{type:"application/json"});
-    const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="scoring-config.json";a.click();URL.revokeObjectURL(url);
-  };
-
-  const s = (tag,props,...children) => h(tag,props,...children);
-
-  return h("div",{style:{color:"#B5D4F4",minHeight:"100vh",padding:"20px 24px"}},
-    // Header
-    h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24,flexWrap:"wrap",gap:12}},
-      h("div",null,
-        h("h1",{style:{fontSize:22,fontWeight:600,color:"#e8f4fd",marginBottom:4,letterSpacing:"-0.5px"}},"Scoring configurator"),
-        h("p",{style:{fontSize:13,color:"#5a7a9a"}},
-          `Tune weights in real time  ·  ${jobs.length} jobs (${dataSource})  ·  ${totalWeight}% total weight`
-        )
-      ),
-      h("div",{style:{display:"flex",gap:8}},
-        h("button",{onClick:()=>{setSavedWeights({...weights});setCompareMode(false);},style:{fontSize:12,padding:"6px 14px",background:"#162d44",color:"#9FE1CB",border:"1px solid #1e3a5f",borderRadius:6,cursor:"pointer",fontFamily:"inherit"}},"Save snapshot"),
-        h("button",{onClick:()=>setCompareMode(!compareMode),style:{fontSize:12,padding:"6px 14px",background:compareMode?"#1e3a5f":"#162d44",color:compareMode?"#5DCAA5":"#85B7EB",border:`1px solid ${compareMode?"#5DCAA5":"#1e3a5f"}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}},compareMode?"Hide compare":"A/B compare"),
-        h("button",{onClick:exportConfig,style:{fontSize:12,padding:"6px 14px",background:"#162d44",color:"#EF9F27",border:"1px solid #1e3a5f",borderRadius:6,cursor:"pointer",fontFamily:"inherit"}},"Export config"),
-      )
-    ),
-    // Main grid
-    h("div",{style:{display:"grid",gridTemplateColumns:"300px minmax(0,1fr)",gap:20,alignItems:"start"}},
-      // Left panel
-      h("div",{style:{position:"sticky",top:20}},
-        h("div",{style:{background:"#0c1520",border:"1px solid #1e3a5f",borderRadius:10,padding:20}},
-          h("div",{style:{fontSize:14,fontWeight:500,color:"#e8f4fd",marginBottom:16,display:"flex",justifyContent:"space-between",alignItems:"center"}},
-            h("span",null,"Weight sliders"),
-            h("button",{onClick:()=>setWeights(DEFAULT_WEIGHTS),style:{fontSize:10,color:"#5a7a9a",background:"none",border:"1px solid #1e3a5f",borderRadius:4,padding:"2px 8px",cursor:"pointer",fontFamily:"inherit"}},"Reset")
-          ),
-          ...Object.keys(DIMENSION_META).map(dim=>{
-            const meta=DIMENSION_META[dim];
-            return h("div",{key:dim,style:{marginBottom:14}},
-              h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}},
-                h("div",{style:{display:"flex",alignItems:"center",gap:8}},
-                  h("div",{style:{width:8,height:8,borderRadius:"50%",background:meta.color}}),
-                  h("span",{style:{fontSize:13,color:"#9FE1CB",fontWeight:500}},meta.label)
-                ),
-                h("span",{style:{fontSize:13,color:meta.color,fontFamily:"'JetBrains Mono',monospace",fontWeight:500}},weights[dim]+"%")
-              ),
-              h("input",{type:"range",min:0,max:50,value:weights[dim],step:5,onChange:e=>setWeights(p=>({...p,[dim]:parseInt(e.target.value)})),style:{width:"100%",height:4,background:`linear-gradient(to right, ${meta.color} ${weights[dim]*2}%, #162d44 ${weights[dim]*2}%)`,borderRadius:2,cursor:"pointer"}}),
-              h("div",{style:{fontSize:11,color:"#5a7a9a",marginTop:2}},meta.desc)
-            );
-          })
-        ),
-        // Distribution
-        h("div",{style:{background:"#0c1520",border:"1px solid #1e3a5f",borderRadius:10,padding:16,marginTop:12}},
-          h("div",{style:{fontSize:13,fontWeight:500,color:"#e8f4fd",marginBottom:12}},"Score distribution"),
-          h("div",{style:{display:"flex",gap:8,alignItems:"flex-end",height:60,padding:"0 4px"}},
-            ...[{l:"Hot",c:buckets.hot,cl:"#5DCAA5"},{l:"Warm",c:buckets.warm,cl:"#EF9F27"},{l:"Cold",c:buckets.cold,cl:"#85B7EB"},{l:"Skip",c:buckets.ice,cl:"#F09595"}].map(b=>
-              h("div",{key:b.l,style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}},
-                h("span",{style:{fontSize:11,color:b.cl,fontFamily:"'JetBrains Mono',monospace",fontWeight:500}},b.c),
-                h("div",{style:{width:"100%",background:b.cl,borderRadius:"2px 2px 0 0",height:`${(b.c/maxBucket)*40}px`,minHeight:2,transition:"height 0.4s ease"}}),
-                h("span",{style:{fontSize:9,color:"#5a7a9a",textTransform:"uppercase",letterSpacing:"0.5px"}},b.l)
-              )
-            )
-          )
-        ),
-        // Stats
-        h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:12}},
-          h("div",{style:{background:"#0c1520",border:"1px solid #1e3a5f",borderRadius:8,padding:"10px 12px"}},
-            h("div",{style:{fontSize:10,color:"#5a7a9a",textTransform:"uppercase",letterSpacing:"0.5px"}},"Avg score"),
-            h("div",{style:{fontSize:20,fontWeight:600,color:"#9FE1CB",fontFamily:"'JetBrains Mono',monospace"}},Math.round(scoredJobs.reduce((s,j)=>s+j.currentScore,0)/scoredJobs.length))
-          ),
-          h("div",{style:{background:"#0c1520",border:"1px solid #1e3a5f",borderRadius:8,padding:"10px 12px"}},
-            h("div",{style:{fontSize:10,color:"#5a7a9a",textTransform:"uppercase",letterSpacing:"0.5px"}},"Hot leads"),
-            h("div",{style:{fontSize:20,fontWeight:600,color:"#5DCAA5",fontFamily:"'JetBrains Mono',monospace"}},buckets.hot)
-          )
-        )
-      ),
-      // Right panel
-      h("div",null,
-        h("div",{style:{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}},
-          h("input",{type:"text",placeholder:"Filter by title or company...",value:filter,onChange:e=>setFilter(e.target.value),style:{flex:1,minWidth:180,padding:"8px 12px",fontSize:13,background:"#0c1520",border:"1px solid #1e3a5f",borderRadius:6,color:"#B5D4F4",outline:"none",fontFamily:"inherit"}}),
-          h("select",{value:selectedCategory,onChange:e=>setSelectedCategory(e.target.value),style:{padding:"8px 12px",fontSize:13,background:"#0c1520",border:"1px solid #1e3a5f",borderRadius:6,color:"#B5D4F4",fontFamily:"inherit"}},
-            ...categories.map(c=>h("option",{key:c,value:c},c))
-          ),
-          h("select",{value:sortBy,onChange:e=>setSortBy(e.target.value),style:{padding:"8px 12px",fontSize:13,background:"#0c1520",border:"1px solid #1e3a5f",borderRadius:6,color:"#B5D4F4",fontFamily:"inherit"}},
-            h("option",{value:"score"},"Sort: Score"),
-            h("option",{value:"company"},"Sort: Company")
-          )
-        ),
-        h("div",{style:{fontSize:12,color:"#5a7a9a",marginBottom:10}},`Showing ${filtered.length} of ${jobs.length} jobs`),
-        h("div",{style:{display:"flex",flexDirection:"column",gap:6}},
-          ...filtered.map(job=>
-            h("div",{key:job.id,style:{background:"#0c1520",border:"1px solid #1e3a5f",borderRadius:8,padding:"12px 16px",display:"grid",gridTemplateColumns:compareMode?"1fr auto auto auto":"1fr auto auto",gap:12,alignItems:"center",borderLeft:`3px solid ${job.currentScore>=80?"#5DCAA5":job.currentScore>=60?"#EF9F27":"#1e3a5f"}`}},
-              h("div",null,
-                h("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}},
-                  h("span",{style:{fontSize:14,fontWeight:500,color:"#e8f4fd"}},job.title),
-                  h("span",{style:{fontSize:10,color:{"L1":"#85B7EB","L2":"#AFA9EC","DeFi":"#5DCAA5","CEX":"#EF9F27","Oracle":"#ED93B1","Gaming":"#F0997B","RWA":"#97C459"}[job.category]||"#5a7a9a",background:({"L1":"#85B7EB","L2":"#AFA9EC","DeFi":"#5DCAA5","CEX":"#EF9F27","Oracle":"#ED93B1","Gaming":"#F0997B","RWA":"#97C459"}[job.category]||"#5a7a9a")+"18",padding:"2px 8px",borderRadius:4,textTransform:"uppercase",letterSpacing:"0.5px",fontWeight:500,whiteSpace:"nowrap"}},job.category)
-                ),
-                h("div",{style:{display:"flex",gap:12,fontSize:12,color:"#5a7a9a",flexWrap:"wrap"}},
-                  h("span",{style:{color:"#85B7EB"}},job.company),
-                  h("span",null,job.location),
-                  job.salary&&h("span",{style:{color:"#9FE1CB"}},`$${Math.round(job.salary.min/1000)}k - $${Math.round(job.salary.max/1000)}k`)
-                )
-              ),
-              compareMode&&h("div",{style:{textAlign:"center"}},
-                h("div",{style:{fontSize:9,color:"#5a7a9a",marginBottom:2}},"SAVED"),
-                h("span",{style:{fontSize:14,fontFamily:"'JetBrains Mono',monospace",color:"#5a7a9a"}},job.savedScore)
-              ),
-              h("div",{style:{display:"flex",alignItems:"center",gap:8,minWidth:120}},
-                h("div",{style:{flex:1,height:6,background:"#162d44",borderRadius:3,overflow:"hidden"}},
-                  h("div",{style:{width:`${job.currentScore}%`,height:"100%",background:job.currentScore>=80?"#5DCAA5":job.currentScore>=60?"#EF9F27":"#F09595",borderRadius:3,transition:"width 0.4s ease"}})
-                ),
-                h("span",{style:{fontSize:13,fontWeight:500,color:job.currentScore>=80?"#5DCAA5":job.currentScore>=60?"#EF9F27":"#F09595",minWidth:28,textAlign:"right",fontFamily:"'JetBrains Mono',monospace"}},job.currentScore)
-              ),
-              compareMode&&h("div",{style:{fontSize:13,fontFamily:"'JetBrains Mono',monospace",color:job.currentScore>job.savedScore?"#5DCAA5":job.currentScore<job.savedScore?"#F09595":"#5a7a9a",minWidth:40,textAlign:"right"}},(job.currentScore>job.savedScore?"+":"")+(job.currentScore-job.savedScore))
-            )
-          )
-        ),
-        filtered.length===0&&h("div",{style:{textAlign:"center",padding:40,color:"#5a7a9a",fontSize:14}},"No jobs match the current filters.")
-      )
-    ),
-    // Footer
-    h("div",{style:{marginTop:32,padding:"16px 0",borderTop:"1px solid #1e3a5f",display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11,color:"#5a7a9a"}},
-      h("span",null,"Job Search Scoring Configurator v2.0  ·  Config-driven  ·  Fork & customize"),
-      h("span",null,"Data refreshes 5x daily via staggered scraper")
-    )
-  );
+function filterCards() {
+  const minScore = parseInt(document.getElementById('scoreSlider').value);
+  document.getElementById('scoreVal').textContent = minScore;
+  const cards = document.querySelectorAll('.card');
+  let visible = 0;
+  cards.forEach(c => {
+    const score = parseInt(c.dataset.score);
+    const source = c.dataset.source;
+    const passScore = score >= minScore;
+    const passSource = activeSources.size === 0 || activeSources.has(source);
+    if (passScore && passSource) {
+      c.classList.remove('hidden');
+      visible++;
+    } else {
+      c.classList.add('hidden');
+    }
+  });
+  document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
 }
-
-ReactDOM.createRoot(document.getElementById("root")).render(h(App));
 </script>
 </body>
 </html>
