@@ -1,0 +1,66 @@
+name: Migrate jobs.json to Supabase
+
+# One-shot manual migration.
+# Loads public/data/jobs.json, applies the cleanup rules defined in
+# scraper/migrate_to_supabase.py (drop X feeds, drop junk, unmash WWR titles,
+# cross-source dedup), and upserts into the Supabase `jobs` table.
+#
+# Requires repo secrets:
+#   SUPABASE_URL
+#   SUPABASE_SERVICE_KEY
+#
+# The script uses upsert on dedup_key, so rerunning is safe (updates, not dupes).
+
+on:
+  workflow_dispatch:
+    inputs:
+      input_path:
+        description: "Path to jobs.json inside the repo"
+        required: true
+        default: "public/data/jobs.json"
+      dry_run:
+        description: "Dry run only (transform + report, no insert)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    name: Run migration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "supabase>=2.9,<3"
+
+      - name: Verify input file exists
+        run: |
+          if [ ! -f "${{ github.event.inputs.input_path }}" ]; then
+            echo "::error::Input file not found: ${{ github.event.inputs.input_path }}"
+            exit 1
+          fi
+          echo "Input: ${{ github.event.inputs.input_path }} ($(wc -c < "${{ github.event.inputs.input_path }}") bytes)"
+
+      - name: Run migration
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python scraper/migrate_to_supabase.py --input "${{ github.event.inputs.input_path }}" --dry
+          else
+            python scraper/migrate_to_supabase.py --input "${{ github.event.inputs.input_path }}"
+          fi
