@@ -1,7 +1,7 @@
 {
   "metadata": {
     "total_jobs": 2386,
-    "last_scrape": "2026-04-21T19:07:10.786494+00:00",
+    "last_scrape": "2026-04-21T22:35:55.610376+00:00",
     "sources_scraped": 40,
     "version": "2.1.0"
   },
@@ -16,7 +16,7 @@
       "location": "Remote",
       "salary": null,
       "description": "",
-      "scraped_at": "2026-04-21T19:06:50.342226+00:00",
+      "scraped_at": "2026-04-21T22:35:35.061497+00:00",
       "raw_score": null
     },
     {
@@ -29,7 +29,7 @@
       "location": "Remote",
       "salary": null,
       "description": "",
-      "scraped_at": "2026-04-21T19:06:50.341950+00:00",
+      "scraped_at": "2026-04-21T22:35:35.061144+00:00",
       "raw_score": null
     },
     {
@@ -42,7 +42,85 @@
       "location": "Remote",
       "salary": null,
       "description": "",
-      "scraped_at": "2026-04-21T19:06:50.341576+00:00",
+      "scraped_at": "2026-04-21T22:35:35.060667+00:00",
+      "raw_score": null
+    },
+    {
+      "id": "4363ccbd5624",
+      "title": "Developer Terms of Use",
+      "company": "Pi Network",
+      "category": "L1",
+      "url": "https://socialchain.app/developer_terms",
+      "source_url": "https://minepi.com/careers",
+      "location": "Remote",
+      "salary": null,
+      "description": "",
+      "scraped_at": "2026-04-21T22:35:19.097919+00:00",
+      "raw_score": null
+    },
+    {
+      "id": "9c75399a7c10",
+      "title": "Pi App Studio Community Guidelines",
+      "company": "Pi Network",
+      "category": "L1",
+      "url": "https://minepi.com/appstudio_community_guidelines/",
+      "source_url": "https://minepi.com/careers",
+      "location": "Remote",
+      "salary": null,
+      "description": "",
+      "scraped_at": "2026-04-21T22:35:19.097833+00:00",
+      "raw_score": null
+    },
+    {
+      "id": "2de3aaa35606",
+      "title": "Community Code of Conduct",
+      "company": "Pi Network",
+      "category": "L1",
+      "url": "https://minepi.com/pioneer-code-of-conduct/",
+      "source_url": "https://minepi.com/careers",
+      "location": "Remote",
+      "salary": null,
+      "description": "",
+      "scraped_at": "2026-04-21T22:35:19.097749+00:00",
+      "raw_score": null
+    },
+    {
+      "id": "b460a5abcf02",
+      "title": "Community",
+      "company": "Pi Network",
+      "category": "L1",
+      "url": "https://minepi.com/blog/",
+      "source_url": "https://minepi.com/careers",
+      "location": "Remote",
+      "salary": null,
+      "description": "",
+      "scraped_at": "2026-04-21T22:35:19.097574+00:00",
+      "raw_score": null
+    },
+    {
+      "id": "cdb168309cad",
+      "title": "New Developers",
+      "company": "Pi Network",
+      "category": "L1",
+      "url": "https://minepi.com/developers/",
+      "source_url": "https://minepi.com/careers",
+      "location": "Remote",
+      "salary": null,
+      "description": "",
+      "scraped_at": "2026-04-21T22:35:19.097340+00:00",
+      "raw_score": null
+    },
+    {
+      "id": "7425b552c2e8",
+      "title": "Skip to main content",
+      "company": "Pi Network",
+      "category": "L1",
+      "url": "https://minepi.com/careers/#ajax-content-wrap",
+      "source_url": "https://minepi.com/careers",
+      "location": "Remote",
+      "salary": null,
+      "description": "",
+      "scraped_at": "2026-04-21T22:35:19.097165+00:00",
       "raw_score": null
     },
     {
@@ -55,7 +133,7 @@
       "location": "Remote",
       "salary": null,
       "description": "",
-      "scraped_at": "2026-04-21T19:06:31.429414+00:00",
+      "scraped_at": "2026-04-21T22:35:16.732285+00:00",
       "raw_score": null
     },
     {
@@ -68,7 +146,7 @@
       "location": "Remote",
       "salary": null,
       "description": "",
-      "scraped_at": "2026-04-21T19:06:31.429241+00:00",
+      "scraped_at": "2026-04-21T22:35:16.732044+00:00",
       "raw_score": null
     },
     {
@@ -81,7 +159,7 @@
       "location": "Remote",
       "salary": null,
       "description": "",
-      "scraped_at": "2026-04-21T19:06:31.429144+00:00",
+      "scraped_at": "2026-04-21T22:35:16.731899+00:00",
       "raw_score": null
     },
     {
@@ -9591,84 +9669,6 @@
       "salary": null,
       "description": "",
       "scraped_at": "2026-04-21T19:03:37.753380+00:00",
-      "raw_score": null
-    },
-    {
-      "id": "4363ccbd5624",
-      "title": "Developer Terms of Use",
-      "company": "Pi Network",
-      "category": "L1",
-      "url": "https://socialchain.app/developer_terms",
-      "source_url": "https://minepi.com/careers",
-      "location": "Remote",
-      "salary": null,
-      "description": "",
-      "scraped_at": "2026-04-21T15:13:50.692408+00:00",
-      "raw_score": null
-    },
-    {
-      "id": "9c75399a7c10",
-      "title": "Pi App Studio Community Guidelines",
-      "company": "Pi Network",
-      "category": "L1",
-      "url": "https://minepi.com/appstudio_community_guidelines/",
-      "source_url": "https://minepi.com/careers",
-      "location": "Remote",
-      "salary": null,
-      "description": "",
-      "scraped_at": "2026-04-21T15:13:50.692347+00:00",
-      "raw_score": null
-    },
-    {
-      "id": "2de3aaa35606",
-      "title": "Community Code of Conduct",
-      "company": "Pi Network",
-      "category": "L1",
-      "url": "https://minepi.com/pioneer-code-of-conduct/",
-      "source_url": "https://minepi.com/careers",
-      "location": "Remote",
-      "salary": null,
-      "description": "",
-      "scraped_at": "2026-04-21T15:13:50.692278+00:00",
-      "raw_score": null
-    },
-    {
-      "id": "b460a5abcf02",
-      "title": "Community",
-      "company": "Pi Network",
-      "category": "L1",
-      "url": "https://minepi.com/blog/",
-      "source_url": "https://minepi.com/careers",
-      "location": "Remote",
-      "salary": null,
-      "description": "",
-      "scraped_at": "2026-04-21T15:13:50.692131+00:00",
-      "raw_score": null
-    },
-    {
-      "id": "cdb168309cad",
-      "title": "New Developers",
-      "company": "Pi Network",
-      "category": "L1",
-      "url": "https://minepi.com/developers/",
-      "source_url": "https://minepi.com/careers",
-      "location": "Remote",
-      "salary": null,
-      "description": "",
-      "scraped_at": "2026-04-21T15:13:50.691994+00:00",
-      "raw_score": null
-    },
-    {
-      "id": "7425b552c2e8",
-      "title": "Skip to main content",
-      "company": "Pi Network",
-      "category": "L1",
-      "url": "https://minepi.com/careers/#ajax-content-wrap",
-      "source_url": "https://minepi.com/careers",
-      "location": "Remote",
-      "salary": null,
-      "description": "",
-      "scraped_at": "2026-04-21T15:13:50.691840+00:00",
       "raw_score": null
     },
     {
